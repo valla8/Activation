@@ -6,6 +6,7 @@
 clear all
 load('control1.mat');
 xref=5;
+E0=58;
 %% Calcular (sin straggling)
 
 AvNmbr = 6.022140857e23;
