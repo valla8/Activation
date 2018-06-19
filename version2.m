@@ -6,8 +6,8 @@
 clear all;close all;
 load('control1.mat');
 dx=0.01
-xref=5;
-E0=58;
+xref=20;
+E0=160;
 pps=1; %p/s
 %% Calcular (sin straggling)
 
@@ -65,18 +65,17 @@ currentEp = E0;
 
 
 % In water (full + simplified versions)
-Y64 = nan(size(x));
-Y66 = nan(size(x));
-Y68 = nan(size(x));
-Y64s = nan(size(x));
-Y66s = nan(size(x));
-Y68s = nan(size(x));
 Y_O16_C11 = nan(size(x));
 Y_O16_N13 = nan(size(x));
 Y_O16_O15 = nan(size(x));
 Y_O16_C11s = nan(size(x));
 Y_O16_N13s = nan(size(x));
 Y_O16_O15s = nan(size(x));
+Y_PG_C12_C12_4w = zeros(size(x));
+Y_PG_O16_C12_4w = zeros(size(x));
+Y_PG_N14_N14_1w = zeros(size(x));
+Y_PG_N14_N14_2w = zeros(size(x));
+Y_PG_O16_O16_6w = zeros(size(x));
 
 % In tissue (simplified form only)
 Y64t = nan(size(x));
@@ -152,7 +151,7 @@ for i=1:(numel(x)-1)
     S_a = max(0,1000*S_a_F(currentEa*1000));
     S_p = max(0,1000*S_p_F(currentEp*1000));
     
-    S1 = (S_w*rho_w*(1-Zn_fraction) + S_Zn*rho_Zn*Zn_fraction); % MeV/cm
+    S1 = (S_w*rho_w); % MeV/cm
     S1t = (S_t*rho_tissue); %*(1-Zn_fraction) + S_Znt*rho_Zn*Zn_fraction); % MeV/cm
     S1b = (S_b*rho_bone); % MeV/cm
     S1a = (S_a*rho_adipose); % MeV/cm
@@ -215,12 +214,19 @@ for i=1:(numel(x)-1)
     Y_O16_C11(i) = rho_O16_A * trapz(E2E1, [O16_C11_F(E1)*1e-24/S1 O16_C11_F(E2)*1e-24/S2]);
     Y_O16_N13(i) = rho_O16_A * trapz(E2E1, [O16_N13_F(E1)*1e-24/S1 O16_N13_F(E2)*1e-24/S2]);
     Y_O16_O15(i) = rho_O16_A * trapz(E2E1, [O16_O15_F(E1)*1e-24/S1 O16_O15_F(E2)*1e-24/S2]);
+    sigma_PG_C12_4w = 0.5 * (max(0,PG_C12_C12_4_F(E1)) + max(0,PG_C12_C12_4_F(E2)));
+    sigma_PG_O16_4w = 0.5 * (max(0,PG_O16_C12_4_F(E1)) + max(0,PG_O16_C12_4_F(E2)));
+    sigma_PG_N14_1w = 0.5 * (max(0,PG_N14_N14_1_F(E1)) + max(0,PG_N14_N14_1_F(E2)));
+    sigma_PG_N14_2w = 0.5 * (max(0,PG_N14_N14_2_F(E1)) + max(0,PG_N14_N14_2_F(E2)));
+    sigma_PG_O16_6w = 0.5 * (max(0,PG_O16_O16_6_F(E1)) + max(0,PG_O16_O16_6_F(E2)));
     sigma_C11_mean = 0.5 * (O16_C11_F(E1) + O16_C11_F(E2));
     sigma_N13_mean = 0.5 * (O16_N13_F(E1) + O16_N13_F(E2));
     sigma_O15_mean = 0.5 * (O16_O15_F(E1) + O16_O15_F(E2));
     Y_O16_C11s(i) = rho_O16_A * sigma_C11_mean * 1e-24 * dx;
     Y_O16_N13s(i) = rho_O16_A * sigma_N13_mean * 1e-24 * dx;
     Y_O16_O15s(i) = rho_O16_A * sigma_O15_mean * 1e-24 * dx;
+    Y_PG_O16_C12_4w(i) = pps * rho_O16_A * sigma_PG_O16_4w * 1e-24 * dx;
+    Y_PG_O16_O16_6w(i) = pps * rho_O16_A * sigma_PG_O16_6w * 1e-24 * dx;
     
     % Tissue (simplified only)
     sigma_C11_meant = 0.5 * (max(0,O16_C11_F(E1t)) + max(0,O16_C11_F(E2t)));
@@ -366,13 +372,13 @@ set(gca,'FontSize',14)
 axis([0 30 0 (max(100*Ddep)+50)]);
 %subplot(2,1,2)
 yyaxis left
-title('Yields of different species (per incoming proton)');
+title('Yields of Water (per incoming proton)');
 hold on
 legend('C11','N13','O15','Location', 'Southeast');
 ylabel('Yield');
-plot(x,Y_O16_C11s,'k:'); hold on
-plot(x,Y_O16_N13s,'c:')
-plot(x,Y_O16_O15s,'m:')
+plot(x,Y_O16_C11s,'k'); hold on
+plot(x,Y_O16_N13s,'c')
+plot(x,Y_O16_O15s,'m')
 set(gca,'FontSize',14)
 [f,g]=min(Ddep);
 axis([0  (ceil(g*dx)) 0 0.3e-4]);
@@ -551,6 +557,40 @@ set(gca,'FontSize',14)
 Y_tot_p=Y_C11p+Y_N13p+Y_O15p+Y_C10p;
 
 %% PG
+
+%PG Agua
+figure
+%subplot(2,1,1)
+%plot(x,Eb)
+yyaxis right
+xlabel('Depth (cm)');
+ylabel('Dose (a.u.)')
+title('WATER');
+hold on
+plot(x,100*Ddep)
+legend('Dose')
+set(gca,'FontSize',14)
+axis([0 15 0 (max(100*Ddep)+50)]);
+%subplot(2,1,2)
+yyaxis left
+grid on
+%title('Yields of different species (per incoming proton)');
+hold on
+Y_4 = Y_PG_O16_C12_4w;
+Y_6 = Y_PG_O16_O16_6w;
+plot(x,Y_4,'r'); hold on
+plot(x,Y_6,'m');
+plot(x,Y_4+Y_6,'b');
+%plot(x,Y_N13p,'c')
+%plot(x,Y_O15p,'m')
+%plot(x,Y_C10p,'y');
+legend('4.44 MeV', '6.13 MeV','Location', 'northwest');
+[f,g]=min(Ddep);
+%axis([0 (ceil(g*dx)) 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
+axis([0 40 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
+xlabel('Depth (cm)');
+ylabel('Yield');
+set(gca,'FontSize',14)
 
 %PG PMMA
 figure
