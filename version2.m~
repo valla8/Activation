@@ -4,11 +4,20 @@
 
 %% Par?metros a modificar:
 clear all;close all;
+
+%Cargamos las vidas medias, secciones eficaces y stopping power para
+%ahorrar tiempo de calculo.
 load('control1.mat');
-dx=0.01
-xref=20;
-E0=160;
-pps=1; %p/s
+
+%PARAMETROS
+dx=0.01        %Paso del intervalo 
+xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=120;        %Energía inicial del haz
+deltat=1;
+a=120/deltat;
+t=900/deltat;
+
+pps=1;         %protones/segundo
 %% Calcular (sin straggling)
 
 AvNmbr = 6.022140857e23;
@@ -20,15 +29,22 @@ rho_tissue = 1.1; %g/cm3
 rho_bone = 1.85; %g/cm3
 rho_adipose = 0.92; %g/cm3
 rho_PMMA= 1.18; %g/cm3
+
+%Densidades Atomicas (A falta de las masas molares usamos
+%sum(Comp_bone.*W_ele)) CORREGIR
 !rho_tissue_A = 4.6243E+22; % atoms/cm3
 rho_tissue_A = AvNmbr*rho_tissue/sum(Comp_tissue.*W_ele);  % atoms/cm3
 rho_bone_A = AvNmbr*rho_bone/sum(Comp_bone.*W_ele);  % atoms/cm3
 rho_adipose_A = AvNmbr*rho_adipose/sum(Comp_adipose.*W_ele);  % atoms/cm3
-rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA.*W_ele);  % atoms/cm3
-%rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
+%rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA.*W_ele);  % atoms/cm3
+rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
 rho_w_A =  rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
 ZnAtomicWeight = 65.38; % g/mol
 rho_Zn_A = Zn_fraction * rho_Zn * AvNmbr / ZnAtomicWeight; % molecules / cm3
+
+%Calculamos la densidad de cada isótopo multiplicando por su peso y su
+%abundancia. Se hace para cada material bone(b) tissue(t) PMMA(p)
+%adipose(a) water ()
 rho_O16_A = rho_w_A * O16_ab; % atoms/cm3
 rho_O16_Ab = rho_bone_A * Comp_bone(4) * O16_ab;
 rho_N14_Ab = rho_bone_A * Comp_bone(3) * N14_ab;
@@ -44,6 +60,7 @@ rho_O16_Aa = rho_adipose_A * Comp_adipose(4) * O16_ab;
 rho_N14_Aa = rho_adipose_A * Comp_adipose(3) * N14_ab;
 rho_C12_Aa = rho_adipose_A * Comp_adipose(2) * C12_ab;
 
+%Se generan los vectores que se usarán en la simulación
 x = 0:dx:xref; % posiciones en cm.
 E = nan(size(x));
 Et = nan(size(x));
@@ -51,19 +68,21 @@ Eb = nan(size(x));
 Ea = nan(size(x));
 Ep = nan(size(x));
 
+%Energia depositada por material
 Ddep = zeros(size(E));
 Ddept = zeros(size(E));
 Ddepb = zeros(size(E));
 Ddepa = zeros(size(E));
 Ddepp = zeros(size(E));
 
+%Energia actual de cada material
 currentE = E0;
 currentEt = E0;
 currentEb = E0;
 currentEa = E0;
 currentEp = E0;
 
-
+%CREACION DE VECTORES DE YIELD
 % In water (full + simplified versions)
 Y_O16_C11 = nan(size(x));
 Y_O16_N13 = nan(size(x));
@@ -78,9 +97,6 @@ Y_PG_N14_N14_2w = zeros(size(x));
 Y_PG_O16_O16_6w = zeros(size(x));
 
 % In tissue (simplified form only)
-Y64t = nan(size(x));
-Y66t = nan(size(x));
-Y68t = nan(size(x));
 Y_O16_C11t = zeros(size(x));
 Y_O16_N13t = zeros(size(x));
 Y_O16_O15t = zeros(size(x));
@@ -142,7 +158,14 @@ Y_PG_N14_N14_2p = zeros(size(x));
 Y_PG_O16_O16_6p = zeros(size(x));
 Y_PG_trap = zeros(size(x));
 
+
+%CALCULO YIELD
+%Recorremos cada una de las regiones del espacio caculando analíticamente
+%el número de protones generado en cada una de ellas.
 for i=1:(numel(x)-1)
+    
+    %Calculamos el poder de frenado para la energía con la que llega el
+    %protón a la lámina.
     S_w = max(0,1000*S_w_F(currentE*1000)); % MeV/(g/cm2)
     S_Zn = max(0,1000*S_Zn_F(currentE*1000)); % MeV/(g/cm2) 
     S_Znt = max(0,1000*S_Zn_F(currentEt*1000)); % MeV/(g/cm2) 
@@ -151,29 +174,38 @@ for i=1:(numel(x)-1)
     S_a = max(0,1000*S_a_F(currentEa*1000));
     S_p = max(0,1000*S_p_F(currentEp*1000));
     
+    %Multiplicamospor la densidad al poder de frenado
     S1 = (S_w*rho_w); % MeV/cm
     S1t = (S_t*rho_tissue); %*(1-Zn_fraction) + S_Znt*rho_Zn*Zn_fraction); % MeV/cm
     S1b = (S_b*rho_bone); % MeV/cm
     S1a = (S_a*rho_adipose); % MeV/cm
     S1p = (S_p*rho_PMMA); % MeV/cm
     
+    %Calculamos la energía que pierde el protón al atravesar la lámina (se
+    %supone que toda la pérdida se hace al final).
     deltaE = dx*S1; % MeV
     deltaEt = dx*S1t; % MeV
     deltaEb = dx*S1b; % MeV
     deltaEa = dx*S1a; %MeV
     deltaEp = dx*S1p; %MeV
     
+    %Guardamos las energías para poder representar todo luego en función de
+    %ella.
     E(i) = currentE; % MeV
     Et(i) = currentEt; % MeV
     Eb(i) = currentEb;  % MeV
     Ea(i) = currentEa; % MeV
     Ep(i) = currentEp; % MeV
+    
+    %Calculamos la energía con la que sale de la lámina que se usará en la
+    %siguiente iteración.
     currentE = currentE - deltaE; % MeV
     currentEt = currentEt - deltaEt; % MeV
     currentEb = currentEb - deltaEb; % MeV
     currentEa = currentEa - deltaEa; %MeV
     currentEp = currentEp - deltaEp; %MeV
     
+    %NO SE USA
     S_w2 = max(0,1000*S_w_F(currentE*1000)); % MeV/(g/cm2)
     S_Zn2 = max(0,1000*S_Zn_F(currentE*1000)); % MeV/(g/cm2)
     S_t2 = max(0,1000*S_t_F(currentEt*1000)); % MeV/(g/cm2)
@@ -181,20 +213,21 @@ for i=1:(numel(x)-1)
     S_b2 = max(0,1000*S_b_F(currentEb*1000));% MeV/(g/cm2)
     S_a2 = max(0,1000*S_a_F(currentEa*1000));% MeV/(g/cm2)
     S_p2 = max(0,1000*S_p_F(currentEp*1000));% MeV/(g/cm2)
-    
     S2 = (S_w2*rho_w); % MeV/cm
     S2t = (S_t2*rho_tissue); %*(1-Zn_fraction) + S_Zn2t*rho_Zn*Zn_fraction); % MeV/cm
     S2b = (S_b2*rho_bone); % MeV/cm3
     S2a = (S_a2*rho_adipose); % MeV/cm3
     S2p = (S_p2*rho_PMMA); % MeV/cm3
     
+    %Guardamos la energía depositada en cada uno de los materiales.
     Ddep(i) = deltaE; % MeV
     Ddept(i) = deltaEt; % MeV
     Ddepb(i) = deltaEb;  % MeV
     Ddepa(i) = deltaEa; %MeV
     Ddepp(i) = deltaEp; %MeV
     
-    % Zn part
+    %Creamos unas variables con los datos anteriores para introducir a
+    %continuación en los Yield.
     E1 = E(i);
     E1t = Et(i);
     E1b = Eb(i);
@@ -205,20 +238,28 @@ for i=1:(numel(x)-1)
     E2a = currentEa;
     E2b = currentEb;
     E2p = currentEp;
+    %Estas de abajo solo se usan por el método trapezoidal que no es el que
+    %estamos teniendo en cuenta.
     E2E1 = [currentE E(i)];
     E2E1t = [currentEt Et(i)];
     E2E1b = [currentEb Eb(i)];
     E2E1p = [currentEp Ep(i)];
     
+    %CALCULO YIELD
+    %Primero se calcula la sección eficaz media en el intervalo y
+    %posterioermente el yield producido. Como se introduce el número de
+    %protones por segundo en realidad se calcula el yield por unidad de
+    %tiempo (s).
+    
     % Water (full + simplified)
     Y_O16_C11(i) = rho_O16_A * trapz(E2E1, [O16_C11_F(E1)*1e-24/S1 O16_C11_F(E2)*1e-24/S2]);
     Y_O16_N13(i) = rho_O16_A * trapz(E2E1, [O16_N13_F(E1)*1e-24/S1 O16_N13_F(E2)*1e-24/S2]);
     Y_O16_O15(i) = rho_O16_A * trapz(E2E1, [O16_O15_F(E1)*1e-24/S1 O16_O15_F(E2)*1e-24/S2]);
-    sigma_PG_C12_4w = 0.5 * (max(0,PG_C12_C12_4_F(E1t)) + max(0,PG_C12_C12_4_F(E2t)));
-    sigma_PG_O16_4w = 0.5 * (max(0,PG_O16_C12_4_F(E1t)) + max(0,PG_O16_C12_4_F(E2t)));
-    sigma_PG_N14_1w = 0.5 * (max(0,PG_N14_N14_1_F(E1t)) + max(0,PG_N14_N14_1_F(E2t)));
-    sigma_PG_N14_2w = 0.5 * (max(0,PG_N14_N14_2_F(E1t)) + max(0,PG_N14_N14_2_F(E2t)));
-    sigma_PG_O16_6w = 0.5 * (max(0,PG_O16_O16_6_F(E1t)) + max(0,PG_O16_O16_6_F(E2t)));
+    sigma_PG_C12_4w = 0.5 * (max(0,PG_C12_C12_4_F(E1)) + max(0,PG_C12_C12_4_F(E2)));
+    sigma_PG_O16_4w = 0.5 * (max(0,PG_O16_C12_4_F(E1)) + max(0,PG_O16_C12_4_F(E2)));
+    sigma_PG_N14_1w = 0.5 * (max(0,PG_N14_N14_1_F(E1)) + max(0,PG_N14_N14_1_F(E2)));
+    sigma_PG_N14_2w = 0.5 * (max(0,PG_N14_N14_2_F(E1)) + max(0,PG_N14_N14_2_F(E2)));
+    sigma_PG_O16_6w = 0.5 * (max(0,PG_O16_O16_6_F(E1)) + max(0,PG_O16_O16_6_F(E2)));
     sigma_C11_mean = 0.5 * (O16_C11_F(E1) + O16_C11_F(E2));
     sigma_N13_mean = 0.5 * (O16_N13_F(E1) + O16_N13_F(E2));
     sigma_O15_mean = 0.5 * (O16_O15_F(E1) + O16_O15_F(E2));
@@ -355,7 +396,7 @@ for i=1:(numel(x)-1)
     
 end
 
-%% Create plots
+%% Create plots de emisores beta+
 
 % Figure in water
 figure
@@ -556,7 +597,7 @@ ylabel('Yield');
 set(gca,'FontSize',14)
 Y_tot_p=Y_C11p+Y_N13p+Y_O15p+Y_C10p;
 
-%% PG
+%% Figuras del Yield production de los PG
 
 %PG Agua
 figure
@@ -585,8 +626,9 @@ plot(x,Y_4+Y_6,'b');
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
 legend('4.44 MeV', '6.13 MeV','Location', 'northwest');
-[f,g]=min(Ddepp);
-axis([0 (ceil(g*dx)) 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
+[f,g]=min(Ddep);
+%axis([0 (ceil(g*dx)) 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
+axis([0 40 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
 xlabel('Depth (cm)');
 ylabel('Yield');
 set(gca,'FontSize',14)
@@ -736,8 +778,11 @@ ylabel('Yield');
 set(gca,'FontSize',14)
 
 
-%% PET activity (t)
+%% PET activity (t) para un cierto número de protones que llegan simultaneamente
+%Valores para los que se pretende calcular la actividad
 calcTimes = [0 60 1000 3600]; % s
+
+%Definimos las variables
 act_C11 = zeros(numel(calcTimes), numel(x));
 act_N13 = zeros(numel(calcTimes), numel(x));
 act_O15 = zeros(numel(calcTimes), numel(x));
@@ -763,36 +808,39 @@ act_C10p = zeros(numel(calcTimes), numel(x));
 act_N13p = zeros(numel(calcTimes), numel(x));
 act_O15p = zeros(numel(calcTimes), numel(x));
 
+%Calculo Actividad
+%Como hemos introducido el p/s en el Yield roduction tenemos que calcular
+%la actividad del número de protones en el intervalo de tiempo que estamos simulando.
 for i=1:numel(calcTimes)
     % Water
-    act_C11(i,:) = landa_C11 .* Y_O16_C11s .* exp(- landa_C11 * calcTimes(i));
-    act_N13(i,:) = landa_N13 .* Y_O16_N13s .* exp(- landa_N13 * calcTimes(i));
-    act_O15(i,:) = landa_O15 .* Y_O16_O15s .* exp(- landa_O15 * calcTimes(i));
+    act_C11(i,:) = deltat * landa_C11 .* Y_O16_C11s .* exp(- landa_C11 * calcTimes(i));
+    act_N13(i,:) = deltat * landa_N13 .* Y_O16_N13s .* exp(- landa_N13 * calcTimes(i));
+    act_O15(i,:) = deltat * landa_O15 .* Y_O16_O15s .* exp(- landa_O15 * calcTimes(i));
     
     % Tissue
-    act_C11t(i,:) = landa_C11 .* Y_C11t .* exp(- landa_C11 * calcTimes(i));
-    act_C10t(i,:) = landa_C10 .* Y_C10t .* exp(- landa_C10 * calcTimes(i));    
-    act_N13t(i,:) = landa_N13 .* Y_N13t .* exp(- landa_N13 * calcTimes(i));
-    act_O15t(i,:) = landa_O15 .* Y_O15t .* exp(- landa_O15 * calcTimes(i));  
+    act_C11t(i,:) = deltat * landa_C11 .* Y_C11t .* exp(- landa_C11 * calcTimes(i));
+    act_C10t(i,:) = deltat * landa_C10 .* Y_C10t .* exp(- landa_C10 * calcTimes(i));    
+    act_N13t(i,:) = deltat * landa_N13 .* Y_N13t .* exp(- landa_N13 * calcTimes(i));
+    act_O15t(i,:) = deltat * landa_O15 .* Y_O15t .* exp(- landa_O15 * calcTimes(i));  
     
      % Adipose
-    act_C11a(i,:) = landa_C11 .* Y_C11a .* exp(- landa_C11 * calcTimes(i));
-    act_C10a(i,:) = landa_C10 .* Y_C10a .* exp(- landa_C10 * calcTimes(i));    
-    act_N13a(i,:) = landa_N13 .* Y_N13a .* exp(- landa_N13 * calcTimes(i));
-    act_O15a(i,:) = landa_O15 .* Y_O15a .* exp(- landa_O15 * calcTimes(i)); 
+    act_C11a(i,:) = deltat * landa_C11 .* Y_C11a .* exp(- landa_C11 * calcTimes(i));
+    act_C10a(i,:) = deltat * landa_C10 .* Y_C10a .* exp(- landa_C10 * calcTimes(i));    
+    act_N13a(i,:) = deltat * landa_N13 .* Y_N13a .* exp(- landa_N13 * calcTimes(i));
+    act_O15a(i,:) = deltat * landa_O15 .* Y_O15a .* exp(- landa_O15 * calcTimes(i)); 
     
      % Bone
-    act_C11b(i,:) = landa_C11 .* Y_C11b .* exp(- landa_C11 * calcTimes(i));
-    act_C10b(i,:) = landa_C10 .* Y_C10b .* exp(- landa_C10 * calcTimes(i));    
-    act_N13b(i,:) = landa_N13 .* Y_N13b .* exp(- landa_N13 * calcTimes(i));
-    act_O15b(i,:) = landa_O15 .* Y_O15b .* exp(- landa_O15 * calcTimes(i)); 
-    act_Sc44b(i,:) = landa_Sc44 .* Y_Sc44b .* exp(- landa_Sc44 * calcTimes(i));
+    act_C11b(i,:) = deltat * landa_C11 .* Y_C11b .* exp(- landa_C11 * calcTimes(i));
+    act_C10b(i,:) = deltat * landa_C10 .* Y_C10b .* exp(- landa_C10 * calcTimes(i));    
+    act_N13b(i,:) = deltat * landa_N13 .* Y_N13b .* exp(- landa_N13 * calcTimes(i));
+    act_O15b(i,:) = deltat * landa_O15 .* Y_O15b .* exp(- landa_O15 * calcTimes(i)); 
+    act_Sc44b(i,:) = deltat * landa_Sc44 .* Y_Sc44b .* exp(- landa_Sc44 * calcTimes(i));
     
      % Bone
-    act_C11p(i,:) = landa_C11 .* Y_C11p .* exp(- landa_C11 * calcTimes(i));
-    act_C10p(i,:) = landa_C10 .* Y_C10p .* exp(- landa_C10 * calcTimes(i));    
-    act_N13p(i,:) = landa_N13 .* Y_N13p .* exp(- landa_N13 * calcTimes(i));
-    act_O15p(i,:) = landa_O15 .* Y_O15p .* exp(- landa_O15 * calcTimes(i)); 
+    act_C11p(i,:) = deltat * landa_C11 .* Y_C11p .* exp(- landa_C11 * calcTimes(i));
+    act_C10p(i,:) = deltat * landa_C10 .* Y_C10p .* exp(- landa_C10 * calcTimes(i));    
+    act_N13p(i,:) = deltat * landa_N13 .* Y_N13p .* exp(- landa_N13 * calcTimes(i));
+    act_O15p(i,:) = deltat * landa_O15 .* Y_O15p .* exp(- landa_O15 * calcTimes(i)); 
 end
 act_total = (act_C11 + act_N13 + act_O15);
 act_totalt = (act_C11t + act_C10t + act_N13t + act_O15t);
@@ -800,6 +848,8 @@ act_totala = (act_C11a + act_C10a + act_N13a + act_O15a);
 act_totalb = (act_C11b + act_C10b + act_N13b + act_O15b+act_Sc44b);
 act_totalp = (act_C11p + act_C10p + act_N13p + act_O15p);
 
+
+%Representación gráfica de los 4 tiempos calculados
 F=figure;
 G=figure;
 H=figure;
@@ -935,11 +985,13 @@ end
 
 
 %% Actividad con el tiempo
-%Por ahora suponemos un protón por segundo.
-deltat=1;
-a=120/deltat;
+%Aquí se calcula la actividad en función del tiempo cuando el tiempo de
+%irradiación es superior al delta de t, es decir, un caso clínico real
+%usando un ciclotrón (no está preparado todavía para la simualción de
+%pulsos de un sincrotrón). Los parámetros de tiempo de irradiación y de
+%decaimiento se introducen al principio
+
 c=1;
-t=900/deltat;
 temp_C10t=zeros(t+1,numel(x));temp_C10a=zeros(t+1,numel(x));
 temp_C11t=zeros(t+1,numel(x));temp_C11a=zeros(t+1,numel(x));
 temp_N13t=zeros(t+1,numel(x));temp_N13a=zeros(t+1,numel(x));
@@ -956,7 +1008,12 @@ temp_parcC11t=zeros(t+1);temp_parcC11p=zeros(t+1);temp_parcC11a=zeros(t+1);temp_
 temp_parcO15t=zeros(t+1);temp_parcO15p=zeros(t+1);temp_parcO15a=zeros(t+1);temp_parcO15b=zeros(t+1);
 temp_parcN13t=zeros(t+1);temp_parcN13p=zeros(t+1);temp_parcN13a=zeros(t+1);temp_parcN13b=zeros(t+1);
 temp_parcC10t=zeros(t+1);temp_parcC10p=zeros(t+1);temp_parcC10a=zeros(t+1);temp_parcC10b=zeros(t+1);
-for i=1:t+1;
+
+%CALCULO
+%Para hacer el calculo suponemos que cada intervalod de tiempo llegan un
+%número de protones que se frenan inmediatamente y genera los isótopos
+%correspondientes. En cada iteración se calcula el número de los isótopos
+%de las iteraciones anterior
     b=i;
     if i<a
         for j=1:b
@@ -1339,5 +1396,7 @@ plot(x,beam(1,:),'b');
 [f,g]=min(Ddepp);
 axis([ 0 (ceil(g*dx)) 0 (max(beam(1,:))+0.2*max(beam(1,:)))]);
 
+
+%%
 
 
