@@ -6,9 +6,10 @@
 clear all;close all;
 load('control1.mat');
 dx=0.01
-xref=5;
-E0=58;
-pps=1; %p/s
+xref=20;
+E0=140;
+pps=1e6; %p/s
+Comp_tissue=[0.6170    0.0798    0.0067    0.2965         0         0];
 %% Calcular (sin straggling)
 
 AvNmbr = 6.022140857e23;
@@ -16,7 +17,7 @@ waterMolecularWeight = 18.01528; %g/mol
 PMMA_Molar=100.12; %g/mol
 rho_w = 1; % g/cm3
 rho_Zn = 7.14; %g/cm3
-rho_tissue = 1.1; %g/cm3
+rho_tissue = 1.01; %g/cm3
 rho_bone = 1.85; %g/cm3
 rho_adipose = 0.92; %g/cm3
 rho_PMMA= 1.18; %g/cm3
@@ -24,9 +25,9 @@ rho_PMMA= 1.18; %g/cm3
 rho_tissue_A = AvNmbr*rho_tissue/sum(Comp_tissue.*W_ele);  % atoms/cm3
 rho_bone_A = AvNmbr*rho_bone/sum(Comp_bone.*W_ele);  % atoms/cm3
 rho_adipose_A = AvNmbr*rho_adipose/sum(Comp_adipose.*W_ele);  % atoms/cm3
-rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA.*W_ele);  % atoms/cm3
-%rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
-rho_w_A =  rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
+%rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA.*W_ele);  % atoms/cm3
+rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
+rho_w_A = (1-Zn_fraction) * rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
 ZnAtomicWeight = 65.38; % g/mol
 rho_Zn_A = Zn_fraction * rho_Zn * AvNmbr / ZnAtomicWeight; % molecules / cm3
 rho_O16_A = rho_w_A * O16_ab; % atoms/cm3
@@ -183,7 +184,7 @@ for i=1:(numel(x)-1)
     S_a2 = max(0,1000*S_a_F(currentEa*1000));% MeV/(g/cm2)
     S_p2 = max(0,1000*S_p_F(currentEp*1000));% MeV/(g/cm2)
     
-    S2 = (S_w2*rho_w); % MeV/cm
+    S2 = (S_w2*rho_w*(1-Zn_fraction) + S_Zn2*rho_Zn*Zn_fraction); % MeV/cm
     S2t = (S_t2*rho_tissue); %*(1-Zn_fraction) + S_Zn2t*rho_Zn*Zn_fraction); % MeV/cm
     S2b = (S_b2*rho_bone); % MeV/cm3
     S2a = (S_a2*rho_adipose); % MeV/cm3
@@ -212,17 +213,29 @@ for i=1:(numel(x)-1)
     E2E1p = [currentEp Ep(i)];
     
     % Water (full + simplified)
+    Y64(i) = rho_Zn_A * Zn64_ab * trapz(E2E1, [Zn64_Ga64_F(E1)*1e-24/S1 Zn64_Ga64_F(E2)*1e-24/S2]);
+    Y66(i) = rho_Zn_A * Zn66_ab * trapz(E2E1, [Zn66_Ga66_F(E1)*1e-24/S1 Zn66_Ga66_F(E2)*1e-24/S2]);
+    Y68(i) = rho_Zn_A * Zn68_ab * trapz(E2E1, [Zn68_Ga68_F(E1)*1e-24/S1 Zn68_Ga68_F(E2)*1e-24/S2]);
     Y_O16_C11(i) = rho_O16_A * trapz(E2E1, [O16_C11_F(E1)*1e-24/S1 O16_C11_F(E2)*1e-24/S2]);
     Y_O16_N13(i) = rho_O16_A * trapz(E2E1, [O16_N13_F(E1)*1e-24/S1 O16_N13_F(E2)*1e-24/S2]);
     Y_O16_O15(i) = rho_O16_A * trapz(E2E1, [O16_O15_F(E1)*1e-24/S1 O16_O15_F(E2)*1e-24/S2]);
+    sigma_64_mean = 0.5 * (Zn64_Ga64_F(E1) + Zn64_Ga64_F(E2));
+    sigma_66_mean = 0.5 * (Zn66_Ga66_F(E1) + Zn66_Ga66_F(E2));
+    sigma_68_mean = 0.5 * (Zn68_Ga68_F(E1) + Zn68_Ga68_F(E2));
     sigma_C11_mean = 0.5 * (O16_C11_F(E1) + O16_C11_F(E2));
     sigma_N13_mean = 0.5 * (O16_N13_F(E1) + O16_N13_F(E2));
     sigma_O15_mean = 0.5 * (O16_O15_F(E1) + O16_O15_F(E2));
+    Y64s(i) = rho_Zn_A * Zn64_ab * sigma_64_mean * 1e-24 * dx;
+    Y66s(i) = rho_Zn_A * Zn66_ab * sigma_66_mean * 1e-24 * dx;
+    Y68s(i) = rho_Zn_A * Zn68_ab * sigma_68_mean * 1e-24 * dx;
     Y_O16_C11s(i) = rho_O16_A * sigma_C11_mean * 1e-24 * dx;
     Y_O16_N13s(i) = rho_O16_A * sigma_N13_mean * 1e-24 * dx;
     Y_O16_O15s(i) = rho_O16_A * sigma_O15_mean * 1e-24 * dx;
     
     % Tissue (simplified only)
+    sigma_64_meant = 0.5 * (max(0,Zn64_Ga64_F(E1t)) + max(0,Zn64_Ga64_F(E2t)));
+    sigma_66_meant = 0.5 * (max(0,Zn66_Ga66_F(E1t)) + max(0,Zn66_Ga66_F(E2t)));
+    sigma_68_meant = 0.5 * (max(0,Zn68_Ga68_F(E1t)) + max(0,Zn68_Ga68_F(E2t)));
     sigma_C11_meant = 0.5 * (max(0,O16_C11_F(E1t)) + max(0,O16_C11_F(E2t)));
     sigma_N13_meant = 0.5 * (max(0,O16_N13_F(E1t)) + max(0,O16_N13_F(E2t)));
     sigma_O15_meant = 0.5 * (max(0,O16_O15_F(E1t)) + max(0,O16_O15_F(E2t)));
@@ -236,6 +249,9 @@ for i=1:(numel(x)-1)
     sigma_PG_N14_1t = 0.5 * (max(0,PG_N14_N14_1_F(E1t)) + max(0,PG_N14_N14_1_F(E2t)));
     sigma_PG_N14_2t = 0.5 * (max(0,PG_N14_N14_2_F(E1t)) + max(0,PG_N14_N14_2_F(E2t)));
     sigma_PG_O16_6t = 0.5 * (max(0,PG_O16_O16_6_F(E1t)) + max(0,PG_O16_O16_6_F(E2t)));
+    Y64t(i) = rho_Zn_A * Zn64_ab * sigma_64_meant * 1e-24 * dx;
+    Y66t(i) = rho_Zn_A * Zn66_ab * sigma_66_meant * 1e-24 * dx;
+    Y68t(i) = rho_Zn_A * Zn68_ab * sigma_68_meant * 1e-24 * dx;
     Y_O16_C11t(i) = pps * rho_O16_At * sigma_C11_meant * 1e-24 * dx;
     Y_O16_N13t(i) = pps * rho_O16_At * sigma_N13_meant * 1e-24 * dx;
     Y_O16_O15t(i) = pps * rho_O16_At * sigma_O15_meant * 1e-24 * dx;
@@ -368,8 +384,17 @@ axis([0 30 0 (max(100*Ddep)+50)]);
 yyaxis left
 title('Yields of different species (per incoming proton)');
 hold on
-legend('C11','N13','O15','Location', 'Southeast');
+plot(x,Y64,'b-'); hold on
+plot(x,Y66,'r-')
+plot(x,Y68,'g-')
+plot(x,Y_O16_C11,'k'); hold on
+plot(x,Y_O16_N13,'c')
+plot(x,Y_O16_O15,'m')
+legend('Zn64','Zn66','Zn68','C11','N13','O15','Location', 'Southeast');
 ylabel('Yield');
+plot(x,Y64s,'b:'); hold on
+plot(x,Y66s,'r:')
+plot(x,Y68s,'g:')
 plot(x,Y_O16_C11s,'k:'); hold on
 plot(x,Y_O16_N13s,'c:')
 plot(x,Y_O16_O15s,'m:')
@@ -898,9 +923,9 @@ end
 %% Actividad con el tiempo
 %Por ahora suponemos un protón por segundo.
 deltat=1;
-a=120/deltat;
+a=120;
 c=1;
-t=900/deltat;
+t=9000;
 temp_C10t=zeros(t+1,numel(x));temp_C10a=zeros(t+1,numel(x));
 temp_C11t=zeros(t+1,numel(x));temp_C11a=zeros(t+1,numel(x));
 temp_N13t=zeros(t+1,numel(x));temp_N13a=zeros(t+1,numel(x));
