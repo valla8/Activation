@@ -50,7 +50,7 @@ ab = [O16_ab N14_ab C12_ab Zn64_ab Zn66_ab Zn68_ab];
 % Water: 0.0305 0 0 0.9695 0 0 0 1.00
 Comp_tissue = [0.619977 0.118053 0.0205881 0.240345 0 0 ];
 Comp_tissue_2 = [0.619977 0.118053 0.0205881 0.240345 0 0 0];
-Comp_water = [0.0305 0 0 0.9695 0 0 0];
+Comp_water = [0.6687 0 0 0.3313 0 0 0];
 Comp_Zn = [0 0 0 0 Zn64_ab Zn66_ab Zn68_ab];
 Comp_tissue_Zn =Zn_fraction*Comp_Zn + (1-Zn_fraction)* Comp_tissue_2;!
 Comp_water_Zn = Zn_fraction*Comp_Zn + (1-Zn_fraction)*Comp_water;
