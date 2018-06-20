@@ -13,10 +13,9 @@ load('control1.mat');
 dx=0.01        %Paso del intervalo 
 xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
 E0=120;        %Energía inicial del haz
-deltat=1;
-a=120/deltat;
-t=900/deltat;
-
+deltat=1;      %Inervalo de tiempo de las simulaciones
+a=120/deltat;  %Tiempo de irradación del haz (s)
+t=900/deltat;  %Tiempo total de la simulación
 pps=1;         %protones/segundo
 %% Calcular (sin straggling)
 
@@ -1016,6 +1015,7 @@ temp_parcC10t=zeros(t+1);temp_parcC10p=zeros(t+1);temp_parcC10a=zeros(t+1);temp_
 %de las iteraciones anteriores que se ha desintegrado y además si estamos
 %en el tiempo de irradiación se suma la contribución de los protones que
 %llegan.
+for i=1:t+1
     b=i;
     if i<a
         for j=1:b
