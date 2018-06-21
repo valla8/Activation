@@ -10,12 +10,13 @@ clear all;close all;
 load('control1.mat');
 
 %PARAMETROS
-dx=0.01        %Paso del intervalo 
+dx=0.01;      %Paso del intervalo 
 xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=120;        %Energía inicial del haz
+E0=160;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
+tt=240/deltat; %Tiempo de recogida de datos total
 pps=1;         %protones/segundo
 %% Calcular (sin straggling)
 
@@ -618,13 +619,13 @@ grid on
 hold on
 Y_4 = Y_PG_O16_C12_4w;
 Y_6 = Y_PG_O16_O16_6w;
-plot(x,Y_4,'r'); hold on
-plot(x,Y_6,'m');
+%plot(x,Y_4,'r'); hold on
+%plot(x,Y_6,'m');
 plot(x,Y_4+Y_6,'b');
 %plot(x,Y_N13p,'c')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
-legend('4.44 MeV', '6.13 MeV','Location', 'northwest');
+legend('Total','Location', 'northwest');
 [f,g]=min(Ddep);
 %axis([0 (ceil(g*dx)) 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
 axis([0 40 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
@@ -1119,7 +1120,7 @@ end
     plot(T*deltat,temp_parcC11t(:,1));
     plot(T*deltat,temp_parcN13t(:,1));
     plot(T*deltat,temp_parcC10t(:,1));
-    title('Actividad total en a lo largo del tiempo HUESO');
+    title('Actividad total en a lo largo del tiempo PIEL');
     xlabel('Tiempo (s)');
     ylabel('Beta+ emitters / s ');
     legend('Actividad total','O15','C11','N13','C10','Location', 'northeast');
@@ -1133,7 +1134,7 @@ end
     plot(T*deltat,temp_parcC11p(:,1));
     plot(T*deltat,temp_parcN13p(:,1));
     plot(T*deltat,temp_parcC10p(:,1));
-%    title('Actividad total en a lo largo del tiempo PMMA');
+    %title('Actividad total en a lo largo del tiempo PMMA');
     xlabel('Tiempo (s)');
     ylabel('Beta+ emitters / s ');
     legend('Actividad total','O15','C11','N13','C10','Location', 'northeast');
@@ -1273,7 +1274,6 @@ end
 %Aquí calculamos la cantidad de pares de 511 keV que se producen durante la
 %irradiación y los que ocurren después en función del espacio, hasta el valor del tiempo en
 %segundos que hay de la variable de abajo
-tt=240;
 
 beam=zeros(1,length(x));
 beam_onp=zeros(1,length(x));
@@ -1287,7 +1287,7 @@ N13_offp=zeros(1,length(x));
 O15_onp=zeros(1,length(x));
 O15_offp=zeros(1,length(x));
 
-for i=1:dd
+for i=1:tt
     beam=beam+int_C10p(i,:)+int_C11p(i,:)+int_N13p(i,:)+int_O15p(i,:);
     if i<a
         beam_onp=beam_onp+int_C10p(i,:)+int_C11p(i,:)+int_N13p(i,:)+int_O15p(i,:);
