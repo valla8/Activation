@@ -12,12 +12,12 @@ load('control1.mat');
 %PARAMETROS
 dx=0.1;      %Paso del intervalo (cm)
 xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=60;        %Energía inicial del haz
+E0=58;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
-pps=1;         %protones/segundo
+pps=1.67e6;         %protones/segundo
 %% Calcular (sin straggling)
 
 AvNmbr = 6.022140857e23;
@@ -36,8 +36,8 @@ rho_PMMA= 1.18; %g/cm3
 rho_tissue_A = AvNmbr*rho_tissue/sum(Comp_tissue.*W_ele);  % atoms/cm3
 rho_bone_A = AvNmbr*rho_bone/sum(Comp_bone.*W_ele);  % atoms/cm3
 rho_adipose_A = AvNmbr*rho_adipose/sum(Comp_adipose.*W_ele);  % atoms/cm3
-%rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA.*W_ele);  % atoms/cm3
-rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
+rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA.*W_ele);  % atoms/cm3
+%rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
 rho_w_A =  rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
 ZnAtomicWeight = 65.38; % g/mol
 rho_Zn_A = Zn_fraction * rho_Zn * AvNmbr / ZnAtomicWeight; % molecules / cm3
@@ -1129,18 +1129,18 @@ end
     axis([0 t*deltat 0 (max(temp_totalt2(:,1))+0.2*max(temp_totalt2(:,1)))]); 
     
     figure;
-    plot(T*deltat,(temp_totalp2(:,1)));
+    plot(T*deltat,(24*temp_totalp2(:,1)));
     hold on;
-    plot(T*deltat,temp_parcO15p(:,1));
-    plot(T*deltat,temp_parcC11p(:,1));
-    plot(T*deltat,temp_parcN13p(:,1));
-    plot(T*deltat,temp_parcC10p(:,1));
+    plot(T*deltat,24*temp_parcO15p(:,1));
+    plot(T*deltat,24*temp_parcC11p(:,1));
+    plot(T*deltat,24*temp_parcN13p(:,1));
+    plot(T*deltat,24*temp_parcC10p(:,1));
     %title('Actividad total en a lo largo del tiempo PMMA');
     xlabel('Tiempo (s)');
     ylabel('Beta+ emitters / s ');
     legend('Actividad total','O15','C11','N13','C10','Location', 'northeast');
     set(gca, 'FontSize', 16) ;
-    axis([0 t*deltat 0 (max(temp_totalp2(:,1))+0.2*max(temp_totalp2(:,1)))]);
+    axis([0 t*deltat 0 (max(24*temp_totalp2(:,1))+0.2*max(24*temp_totalp2(:,1)))]);
     
     figure;
     plot(T*deltat,(temp_totala2(:,1)));
@@ -1315,16 +1315,16 @@ figure;
     axis([0 17 0 max(100*Ddepp)+0.3*max(100*Ddepp)]);
     yyaxis left
 hold on;
-plot(x,24*beam_onp(1,:),'b');
-plot(x,24*beam_offp(1,:),'r');
+plot(x,beam_onp(1,:),'b');
+plot(x,beam_offp(1,:),'r');
     title('Actividad total ');
     xlabel('z (cm)')
-    ylabel('Beta+ emitters / s ');
+    ylabel('Beta+ emitters  ');
     legend('Beam On','Beam Off','Location', 'northeast');
     set(gca, 'FontSize', 16) 
     grid on;
 [f,g]=min(Ddepp);
-axis([ 0 (ceil(g*dx)) 0 (24*max(beam_offp)+0.2*max(24*beam_offp))]);
+axis([ 0 (ceil(g*dx)) 0 (max(beam_offp)+0.2*max(beam_offp))]);
 
 figure;
 %subplot(2,2,2);
@@ -1339,7 +1339,7 @@ plot(x,C11_onp(1,:),'b');
 plot(x,C11_offp(1,:),'r');
     title('C11 ');
     xlabel('z (cm)')
-    ylabel('Beta+ emitters / s ');
+    ylabel('Beta+ emitters ');
     legend('Beam On','Beam Off','Location', 'northeast');
     set(gca, 'FontSize', 16) 
     grid on;
@@ -1359,7 +1359,7 @@ plot(x,O15_onp(1,:),'b');
 plot(x,O15_offp(1,:),'r');
     title('O15 ');
     xlabel('z (cm)')
-    ylabel('Beta+ emitters / s ');
+    ylabel('Beta+ emitters  ');
     legend('Beam On','Beam Off','Location', 'northeast');
     set(gca, 'FontSize', 16) 
     grid on;
@@ -1379,7 +1379,7 @@ plot(x,N13_onp(1,:),'b');
 plot(x,N13_offp(1,:),'r');
     title('N13 ');
     xlabel('z (cm)')
-    ylabel('Beta+ emitters / s ');
+    ylabel('Beta+ emitters  ');
     legend('Beam On','Beam Off','Location', 'northeast');
     set(gca, 'FontSize', 16) 
     grid on;
@@ -1397,7 +1397,7 @@ hold on;
 plot(x,beam(1,:),'b');
     title('Total ');
     xlabel('z (cm)')
-    ylabel('Beta+ emitters / s ');
+    ylabel('Beta+ emitters  ');
     legend('Beam On','Dose','Location', 'northeast');
     set(gca, 'FontSize', 16) 
     grid on;
