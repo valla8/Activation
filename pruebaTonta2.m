@@ -12,17 +12,23 @@ E0 = 58; % Energ?a inicial del haz (MeV)
 % Secciones de EXFOR.
 load('CrossSections.mat');
 %C12_C10_CS=C12_C10_CS./1000;
-C12_C11_CS=C12_C11_CS./1000;
-PG_C12_C12_4_CS=PG_C12_C12_4_CS'./1000;
-PG_O16_C12_4_CS=PG_O16_C12_4_CS'./1000;
-PG_N14_N14_1_CS=PG_N14_N14_1_CS'./1000;
-PG_N14_N14_2_CS=PG_N14_N14_2_CS'./1000;
-PG_O16_O16_6_CS=PG_O16_O16_6_CS'./1000;
-PG_C12_C12_4_E=PG_C12_C12_4_E';
-PG_O16_C12_4_E=PG_O16_C12_4_E';
-PG_N14_N14_1_E=PG_N14_N14_1_E';
-PG_N14_N14_2_E=PG_N14_N14_2_E';
-PG_O16_O16_6_E=PG_O16_O16_6_E';
+%C12_C11_CS=C12_C11_CS./1000;
+%PG_C12_C12_4_CS=PG_C12_C12_4_CS./1000;
+%PG_O16_C12_4_CS=PG_O16_C12_4_CS./1000;
+%PG_N14_N14_1_CS=PG_N14_N14_1_CS./1000;
+%PG_N14_N14_2_CS=PG_N14_N14_2_CS./1000;
+%PG_O16_O16_6_CS=PG_O16_O16_6_CS./1000;
+%PG_C12_C12_4_E=PG_C12_C12_4_E;
+%PG_O16_C12_4_E=PG_O16_C12_4_E;
+%PG_N14_N14_1_E=PG_N14_N14_1_E;
+%PG_N14_N14_2_E=PG_N14_N14_2_E;
+%PG_O16_O16_6_E=PG_O16_O16_6_E;
+
+I127_Xe127_CS=I127_Xe127_CS./1000;
+I127_Xe125_CS=I127_Xe125_CS./1000;
+I127_Xe123_CS=I127_Xe123_CS./1000;
+I127_Xe122_CS=I127_Xe122_CS./1000;
+
 % Vidas medias en s
 load('MeanLives.mat');
 landa_C10 = log(2) / T_C10;
@@ -33,6 +39,10 @@ landa_Ga68 = log(2) / T_Ga68;
 landa_N13 = log(2) / T_N13;
 landa_O15 = log(2) / T_O15;
 landa_Sc44 = log(2) / T_Sc44;
+landa_Xe127 = log(2) / T_Xe127;
+landa_Xe125 = log(2) / T_Xe125;
+landa_Xe123 = log(2) / T_Xe123;
+landa_Xe122 = log(2) / T_Xe122;
 
 % Natural abundances
 O16_ab = 0.99729; %1
@@ -42,6 +52,7 @@ Zn64_ab = 0.492; %4
 Zn66_ab = 0.277; %5
 Zn68_ab = 0.185; %6
 Ca44_ab = 0.0223233841; %
+I127_ab = 1;
 ab = [O16_ab N14_ab C12_ab Zn64_ab Zn66_ab Zn68_ab];
 
 % Tissue compositions (fuente: Zhu 2011, ICRU Report #63, ICRU Report #44)
@@ -59,6 +70,7 @@ Comp_bone=[0.475402    0.121899    0.0304112    0.282845    0.0343791    0.05313
 W_ele = [1.00794 12.011 14.00674 15.9994 30.973762 40.078];
 Comp_adipose = [0.634657 0.284  0.0030464 0.0777462 0 0];
 Comp_PMMA= [0.535002   0.332244 0  0.132754 0 0];
+Comp_PMMA_w= [0.080   0.60 0  0.32 0 0];
 
 % Cargar stopping powers (only for water, tissue, Zn, bone)
 load('stoppingpowers.mat');
@@ -271,6 +283,59 @@ xlabel('Proton energy (MeV)')
 ylabel('Cross section (barn)')
 title('16 O-16 O 6.13 MeV cross sections')
 
+%% Fit 127I-127Xe MeV
+figure
+hold off
+plot(I127_Xe127_E,I127_Xe127_CS,'bo'); hold on
+I127_Xe127_F = fit(I127_Xe127_E,I127_Xe127_CS,'smoothingspline','SmoothingParam',0.9)
+I127_Xe127_F.p.coefs(1,:) = [0 0 0 0];
+I127_Xe127_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,I127_Xe127_F(Eval),'r-')
+axis([0 300 0 1.0]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('I127-Xe127 cross sections')
+
+%% Fit 127I-125Xe MeV
+figure
+hold off
+plot(I127_Xe125_E,I127_Xe125_CS,'bo'); hold on
+I127_Xe125_F = fit(I127_Xe125_E,I127_Xe125_CS,'smoothingspline','SmoothingParam',0.9)
+I127_Xe125_F.p.coefs(1,:) = [0 0 0 0];
+I127_Xe125_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,I127_Xe125_F(Eval),'r-')
+axis([0 300 0 1.0]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('I127-Xe125 cross sections')
+
+
+%% Fit 127I-123Xe MeV
+figure
+hold off
+plot(I127_Xe123_E,I127_Xe123_CS,'bo'); hold on
+I127_Xe123_F = fit(I127_Xe123_E,I127_Xe123_CS,'smoothingspline','SmoothingParam',0.9)
+I127_Xe123_F.p.coefs(1,:) = [0 0 0 0];
+I127_Xe123_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,I127_Xe123_F(Eval),'r-')
+axis([0 300 0 1.0]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('I127-Xe123 cross sections')
+
+
+%% Fit 127I-122Xe MeV
+figure
+hold off
+plot(I127_Xe122_E,I127_Xe122_CS,'bo'); hold on
+I127_Xe122_F = fit(I127_Xe122_E,I127_Xe122_CS,'smoothingspline','SmoothingParam',0.99)
+I127_Xe122_F.p.coefs(1,:) = [0 0 0 0];
+I127_Xe122_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,I127_Xe122_F(Eval),'r-')
+axis([0 300 0 1.0]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('I127-Xe122 cross sections')
 
 %% Plot all (water)
 figure
