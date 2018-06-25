@@ -255,6 +255,9 @@ S_a_F.p.coefs(end,:) = [0 0 0 0];
 S_p_F = fit(E_keV_PMMA,S_PMMA,'smoothingspline','SmoothingParam',0.002)
 S_p_F.p.coefs(1,:) = [0 0 0 0];
 S_p_F.p.coefs(end,:) = [0 0 0 0];
+S_i_F = fit(E_keV_Iodo,S_Iodo,'smoothingspline','SmoothingParam',0.002)
+S_i_F.p.coefs(1,:) = [0 0 0 0];
+S_i_F.p.coefs(end,:) = [0 0 0 0];
 loglog(E_keV,S_Zn_F(E_keV),'r-')
 hold on;
 loglog(E_keV,S_Zn66,'ro')
@@ -268,7 +271,9 @@ loglog(E_keV_adipose,S_adipose,'mo')
 loglog(E_keV_adipose,S_a_F(E_keV_adipose),'m-')
 loglog(E_keV_PMMA,S_PMMA,'co')
 loglog(E_keV_PMMA,S_p_F(E_keV_PMMA),'c-')
-legend('Zn66 fit','Zn66 SRIM data', 'Water fit', 'Water SRIM data', 'Tissue fit', 'Tissue SRIM data','Bone fit', 'Bone data', 'Adipose data','Adipose fit','PMMA');
+loglog(E_keV_Iodo,S_Iodo,'co')
+loglog(E_keV_Iodo,S_i_F(E_keV_Iodo),'c-')
+legend('Zn66 fit','Zn66 SRIM data', 'Water fit', 'Water SRIM data', 'Tissue fit', 'Tissue SRIM data','Bone fit', 'Bone data', 'Adipose data','Adipose fit','PMMA','Adipose PMMA','Iodo');
 xlabel('Proton energy (MeV)');
 ylabel('Stopping power (MeV/(cm2/mg))');
 %%
@@ -595,7 +600,7 @@ plot(x,Y_O16_C11s,'k:'); hold on
 plot(x,Y_O16_N13s,'c:')
 plot(x,Y_O16_O15s,'m:')
 set(gca,'FontSize',14)
-axis([0 30 0 0.3e-4]);
+axis([0 5 0 0.3e-4]);
 
 % Figure in tisssue
 figure
