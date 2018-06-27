@@ -24,6 +24,13 @@ load('CrossSections.mat');
 %PG_N14_N14_2_E=PG_N14_N14_2_E;
 %PG_O16_O16_6_E=PG_O16_O16_6_E;
 
+%PG Nitrogeno Tallys
+%Para poner experimentales comentar estas 4 lineas
+PG_N14_N14_2_CS=PG_N14_L2_CS./1000;
+PG_N14_N14_1_CS=PG_N14_L1_CS./1000;
+PG_N14_N14_1_E=PG_N14_L1_E;
+PG_N14_N14_2_E=PG_N14_L2_E;
+
 I127_Xe127_CS=I127_Xe127_CS./1000;
 I127_Xe125_CS=I127_Xe125_CS./1000;
 I127_Xe123_CS=I127_Xe123_CS./1000;
