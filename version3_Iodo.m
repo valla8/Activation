@@ -36,6 +36,9 @@ W_ele = [1.00794 12.011 14.00674 15.9994 30.973762 40.078 126.9];
 Comp_adipose = [0.634657 0.284  0.0030464 0.0777462 0 0 0];
 Comp_PMMA= [0.535002   0.332244 0  0.132754 0 0 0];
 Comp_PMMA_w= [0.080   0.60 0  0.32 0 0 0];
+Comp_bone_I =I_fraction*Comp_I + (1-I_fraction)* Comp_bone;
+Comp_adipose_I = I_fraction*Comp_I + (1-I_fraction)* Comp_adipose;
+Comp_PMMA_I = I_fraction*Comp_I + (1-I_fraction)* Comp_PMMA;
 
 
 AvNmbr = 6.022140857e23;
