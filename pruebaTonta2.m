@@ -41,7 +41,9 @@ load('MeanLives.mat');
 landa_C10 = log(2) / T_C10;
 landa_C11 = log(2) / T_C11;
 landa_Ga64 = log(2) / T_Ga64;
+landa_Ga65 = log(2) / T_Ga65;
 landa_Ga66 = log(2) / T_Ga66;
+landa_Ga67 = log(2) / T_Ga67;
 landa_Ga68 = log(2) / T_Ga68;
 landa_N13 = log(2) / T_N13;
 landa_O15 = log(2) / T_O15;
@@ -110,6 +112,51 @@ ylabel('Cross section (barn)')
 legend('Zn66 data','Zn66 fit','Zn64 data','Zn64 fit','Zn68 data','Zn68 fit')
 title('Zn cross sections')
 
+
+%% Fit secciones eficaces Zn67-Ga67
+figure
+plot(Zn67_Ga67_E,Zn67_Ga67_CS,'bo'); hold on
+Zn67_Ga67_F = fit(Zn67_Ga67_E,Zn67_Ga67_CS,'smoothingspline','SmoothingParam',0.02)
+Zn67_Ga67_F.p.coefs(1,:) = [0 0 0 0]
+plot(Eval,Zn67_Ga67_F(Eval),'r-')
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Zn67->Ga67 cross sections')
+axis([0 300 0 1])
+
+%% Fit secciones eficaces Zn66-Ga65
+figure
+plot(Zn66_Ga65_E,Zn66_Ga65_CS,'bo'); hold on
+Zn66_Ga65_F = fit(Zn66_Ga65_E,Zn66_Ga65_CS,'smoothingspline','SmoothingParam',0.999)
+Zn66_Ga65_F.p.coefs(1,:) = [0 0 0 0]
+plot(Eval,Zn66_Ga65_F(Eval),'r-')
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Zn66->Ga65 cross sections')
+axis([0 300 0 1])
+
+%% Fit secciones eficaces Zn67-Ga66
+figure
+plot(Zn67_Ga66_E,Zn67_Ga66_CS,'bo'); hold on
+Zn67_Ga66_F = fit(Zn67_Ga66_E,Zn67_Ga66_CS,'smoothingspline','SmoothingParam',0.999)
+Zn67_Ga66_F.p.coefs(1,:) = [0 0 0 0]
+plot(Eval,Zn67_Ga66_F(Eval),'r-')
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Zn67->Ga66 cross sections')
+axis([0 300 0 1])
+
+%% Fit secciones eficaces Zn68-Ga67
+figure
+plot(Zn68_Ga67_E,Zn68_Ga67_CS,'bo'); hold on
+Zn68_Ga67_F = fit(Zn68_Ga67_E,Zn68_Ga67_CS,'smoothingspline','SmoothingParam',0.999)
+Zn68_Ga67_F.p.coefs(1,:) = [0 0 0 0]
+plot(Eval,Zn68_Ga67_F(Eval),'r-')
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Zn68->Ga67 cross sections')
+axis([0 300 0 1])
+
 %% Fit secciones eficaces C12_C10
 figure
 plot(C12_C10_E,C12_C10_CS,'bo'); hold on
@@ -119,6 +166,7 @@ plot(Eval,C12_C10_F(Eval),'r-')
 xlabel('Proton energy (MeV)')
 ylabel('Cross section (barn)')
 title('C12->C10 cross sections')
+axis([0 300 0 1])
 %axis([0 100 0 0.2]);
 
 %% Fit secciones eficaces  C12_C11
