@@ -18,7 +18,7 @@ a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
 pps=1;         %protones/segundo
-Zn_fraction = 0.1;
+Zn_fraction = 0.05;
 %% Composiciones
 
 % Composición materiales

@@ -36,6 +36,8 @@ I127_Xe125_CS=I127_Xe125_CS./1000;
 I127_Xe123_CS=I127_Xe123_CS./1000;
 I127_Xe122_CS=I127_Xe122_CS./1000;
 
+O18_F18_CS=O18_F18_CS/1000;
+
 % Vidas medias en s
 load('MeanLives.mat');
 landa_C10 = log(2) / T_C10;
@@ -256,6 +258,19 @@ axis([0 300 0 0.2]);
 xlabel('Proton energy (MeV)')
 ylabel('Cross section (barn)')
 title('O16->O15 cross sections')
+
+%% Fit secciones eficaces  O18_F18
+figure
+hold off
+plot(O18_F18_E,O18_F18_CS,'bo'); hold on
+O18_F18_F = fit(O18_F18_E,O18_F18_CS,'smoothingspline','SmoothingParam',0.99)
+O18_F18_F.p.coefs(1,:) = [0 0 0 0];
+O18_F18_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,O18_F18_F(Eval),'r-')
+axis([0 300 0 1]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('O18->F18 cross sections')
 
 %% Fit secciones eficaces  C44_Sc44
 figure

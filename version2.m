@@ -90,6 +90,7 @@ Y_O16_O15 = nan(size(x));
 Y_O16_C11s = nan(size(x));
 Y_O16_N13s = nan(size(x));
 Y_O16_O15s = nan(size(x));
+Y_O18_F18w = zeros(size(x));
 Y_PG_C12_C12_4w = zeros(size(x));
 Y_PG_O16_C12_4w = zeros(size(x));
 Y_PG_N14_N14_1w = zeros(size(x));
@@ -263,9 +264,11 @@ for i=1:(numel(x)-1)
     sigma_C11_mean = 0.5 * (O16_C11_F(E1) + O16_C11_F(E2));
     sigma_N13_mean = 0.5 * (O16_N13_F(E1) + O16_N13_F(E2));
     sigma_O15_mean = 0.5 * (O16_O15_F(E1) + O16_O15_F(E2));
+    sigma_F18_mean = 0.5 * (O18_F18_F(E1) + O18_F18_F(E2));
     Y_O16_C11s(i) = rho_O16_A * sigma_C11_mean * 1e-24 * dx;
     Y_O16_N13s(i) = rho_O16_A * sigma_N13_mean * 1e-24 * dx;
     Y_O16_O15s(i) = rho_O16_A * sigma_O15_mean * 1e-24 * dx;
+    Y_O18_F18w(i) = rho_O16_A * sigma_F18_mean * 1e-24 * dx;
     Y_PG_O16_C12_4w(i) = pps * rho_O16_A * sigma_PG_O16_4w * 1e-24 * dx;
     Y_PG_O16_O16_6w(i) = pps * rho_O16_A * sigma_PG_O16_6w * 1e-24 * dx;
     
@@ -423,6 +426,34 @@ legend('C11','N13','O15','Location', 'northwest');
 set(gca,'FontSize',14)
 [f,g]=min(Ddep);
 axis([0  (ceil(g*dx)) 0 max(Y_O16_O15s)+0.2*max(Y_O16_O15s)]);
+
+%Figure 18F
+figure
+%subplot(2,1,1)
+%plot(x,E)
+yyaxis right
+xlabel('Depth (cm)');
+ylabel('Dose (a.u.)')
+title('Water + Zn');
+%hold on
+plot(x,100*Ddep)
+legend('Dose')
+set(gca,'FontSize',14)
+axis([0 30 0 (max(100*Ddep)+50)]);
+%subplot(2,1,2)
+yyaxis left
+title('Yields of Water (18F)');
+hold on
+ylabel('\beta^+ isotopes/proton/mm');
+plot(x,Y_O16_C11s,'k'); hold on
+plot(x,Y_O16_N13s,'c')
+plot(x,Y_O16_O15s,'m')
+plot(x,Y_O18_F18w, 'r')
+legend('C11','N13','O15','F18','Location', 'northwest');
+set(gca,'FontSize',14)
+[f,g]=min(Ddep);
+axis([0  (ceil(g*dx)) 0 max(Y_O16_O15s)+0.2*max(Y_O16_O15s)]);
+
 
 % Figure in tisssue
 figure
