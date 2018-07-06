@@ -10,14 +10,14 @@ clear all;close all;
 load('control1.mat');
 
 %PARAMETROS
-dx=0.15;      %Paso del intervalo (cm)
-xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=58;        %Energía inicial del haz
+dx=0.5;      %Paso del intervalo (cm)
+xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=160;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
-pps=1.67e6*4;         %protones/segundo
+pps=1e9;         %protones/segundo
 %% Calcular (sin straggling)
 
 AvNmbr = 6.022140857e23;
