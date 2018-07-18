@@ -10,14 +10,14 @@ clear all;close all;
 load('control1.mat');
 
 %PARAMETROS
-dx=0.5;      %Paso del intervalo (cm)
-xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=160;        %Energía inicial del haz
+dx=0.01      %Paso del intervalo (cm)
+xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=55;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
-pps=1e9;         %protones/segundo
+pps=1;         %protones/segundo
 %% Calcular (sin straggling)
 
 AvNmbr = 6.022140857e23;
@@ -36,7 +36,7 @@ rho_PMMA= 1.18; %g/cm3
 rho_tissue_A = AvNmbr*rho_tissue/sum(Comp_tissue.*W_ele);  % atoms/cm3
 rho_bone_A = AvNmbr*rho_bone/sum(Comp_bone.*W_ele);  % atoms/cm3
 rho_adipose_A = AvNmbr*rho_adipose/sum(Comp_adipose.*W_ele);  % atoms/cm3
-rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA_w.*W_ele);  % atoms/cm3
+rho_PMMA_A = AvNmbr*rho_PMMA/sum(Comp_PMMA.*W_ele);  % atoms/cm3
 %rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
 rho_w_A =  rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
 ZnAtomicWeight = 65.38; % g/mol
@@ -84,12 +84,12 @@ currentEp = E0;
 
 %CREACION DE VECTORES DE YIELD
 % In water (full + simplified versions)
-Y_O16_C11 = nan(size(x));
-Y_O16_N13 = nan(size(x));
-Y_O16_O15 = nan(size(x));
-Y_O16_C11s = nan(size(x));
-Y_O16_N13s = nan(size(x));
-Y_O16_O15s = nan(size(x));
+Y_O16_C11 = zeros(size(x));
+Y_O16_N13 = zeros(size(x));
+Y_O16_O15 = zeros(size(x));
+Y_O16_C11s = zeros(size(x));
+Y_O16_N13s = zeros(size(x));
+Y_O16_O15s = zeros(size(x));
 Y_O18_F18w = zeros(size(x));
 Y_PG_C12_C12_4w = zeros(size(x));
 Y_PG_O16_C12_4w = zeros(size(x));
@@ -448,11 +448,11 @@ ylabel('\beta^+ isotopes/proton/mm');
 plot(x,Y_O16_C11s,'k'); hold on
 plot(x,Y_O16_N13s,'c')
 plot(x,Y_O16_O15s,'m')
-plot(x,Y_O18_F18w, 'r')
+plot(x,0.25*Y_O18_F18w, 'b')
 legend('C11','N13','O15','F18','Location', 'northwest');
 set(gca,'FontSize',14)
 [f,g]=min(Ddep);
-axis([0  (ceil(g*dx)) 0 max(Y_O16_O15s)+0.2*max(Y_O16_O15s)]);
+axis([0  (ceil(g*dx)) 0 max(0.25*Y_O18_F18w)+0.2*max(Y_O16_O15s)]);
 
 
 % Figure in tisssue
@@ -817,6 +817,7 @@ calcTimes = [0 60 1000 3600]; % s
 act_C11 = zeros(numel(calcTimes), numel(x));
 act_N13 = zeros(numel(calcTimes), numel(x));
 act_O15 = zeros(numel(calcTimes), numel(x));
+act_F18 = zeros(numel(calcTimes), numel(x));
 
 act_C11t = zeros(numel(calcTimes), numel(x));
 act_C10t = zeros(numel(calcTimes), numel(x));
@@ -848,6 +849,7 @@ for i=1:numel(calcTimes)
     act_C11(i,:) = deltat * landa_C11 .* Y_O16_C11s .* exp(- landa_C11 * calcTimes(i));
     act_N13(i,:) = deltat * landa_N13 .* Y_O16_N13s .* exp(- landa_N13 * calcTimes(i));
     act_O15(i,:) = deltat * landa_O15 .* Y_O16_O15s .* exp(- landa_O15 * calcTimes(i));
+    act_F18(i,:) = deltat * landa_F18 .* Y_O18_F18w .* exp(- landa_F18 * calcTimes(i));
     
     % Tissue
     act_C11t(i,:) = deltat * landa_C11 .* Y_C11t .* exp(- landa_C11 * calcTimes(i));
@@ -874,7 +876,7 @@ for i=1:numel(calcTimes)
     act_N13p(i,:) = deltat * landa_N13 .* Y_N13p .* exp(- landa_N13 * calcTimes(i));
     act_O15p(i,:) = deltat * landa_O15 .* Y_O15p .* exp(- landa_O15 * calcTimes(i)); 
 end
-act_total = (act_C11 + act_N13 + act_O15);
+act_total = (act_C11 + act_N13 + act_O15+act_F18);
 act_totalt = (act_C11t + act_C10t + act_N13t + act_O15t);
 act_totala = (act_C11a + act_C10a + act_N13a + act_O15a);
 act_totalb = (act_C11b + act_C10b + act_N13b + act_O15b+act_Sc44b);
@@ -882,6 +884,7 @@ act_totalp = (act_C11p + act_C10p + act_N13p + act_O15p);
 
 
 %Representación gráfica de los 4 tiempos calculados
+E=figure
 F=figure;
 G=figure;
 H=figure;
@@ -889,6 +892,31 @@ I=figure;
 AAA=length(calcTimes);
 
 for i=1:numel(calcTimes)
+    
+        figure(E)
+    subplot(2,2,i)
+    yyaxis left
+    plot(x, act_total(i,:),'b')
+    hold on
+    plot(x, act_C11(i,:),'r')
+    plot(x, act_N13(i,:),'y')
+    plot(x, act_O15(i,:),'c')
+    plot(x, act_F18(i,:),'g')
+    title(sprintf('Activity at t=%i s ',calcTimes(i)));
+    xlabel('Depth (cm)')
+    ylabel('Beta+/proton/mm/s ');
+    legend('Total','C11','N13','O15','F18', 'Location', 'northwest');
+    set(gca, 'FontSize', 16)   
+  
+    
+    yyaxis right
+    grid on
+    plot(x,100*Ddep);
+    ylabel('-dE/dx')
+    [f,g]=min(Ddept);
+    axis([0 (ceil(g*dx)) 0 max(100*Ddep)+0.2*max(100*Ddep)]);
+    
+    
     figure(F)
     subplot(2,2,i)
     yyaxis left
