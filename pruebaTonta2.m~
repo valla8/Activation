@@ -383,7 +383,6 @@ xlabel('Proton energy (MeV)')
 ylabel('Cross section (barn)')
 title('18-O L2 3.555  MeV cross sections')
 
-
 %% Fit 127I-127Xe MeV
 figure
 hold off
