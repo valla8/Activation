@@ -10,9 +10,9 @@ clear all;close all;
 load('control1.mat');
 
 %PARAMETROS
-dx=0.01;      %Paso del intervalo (cm)
-xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=55;        %Energía inicial del haz
+dx=0.1;      %Paso del intervalo (cm)
+xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=120;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
@@ -473,7 +473,7 @@ set(gca,'FontSize',14)
 axis([0 30 0 (max(Con_w*Ddep)+0.2*max(Con_w*Ddep))]);
 %subplot(2,1,2)
 yyaxis left
-title('Yields of Water (per incoming proton)');
+title('Yields of Water ');
 hold on
 ylabel('\beta^+ isotopes/Gy/mm');
 plot(x,Np_w/pps*Y_O16_C11s,'k'); hold on
@@ -481,8 +481,9 @@ plot(x,Np_w/pps*Y_O16_N13s,'c')
 plot(x,Np_w/pps*Y_O16_O15s,'m')
 legend('C11','N13','O15','Location', 'northwest');
 set(gca,'FontSize',14)
+grid on
 [f,g]=min(Ddep);
-axis([0  (ceil(g*dx)) 0 max(Np_w/pps*Y_O16_O15s)+0.2*max(Np_w/pps*Y_O16_O15s)]);
+axis([(0.7*ceil(g*dx))  (ceil(g*dx)) 0 max(Np_w/pps*Y_O16_O15s)+0.2*max(Np_w/pps*Y_O16_O15s)]);
 
 
 
@@ -514,7 +515,7 @@ plot(x,Np_t/pps*Y_O15t,'m')
 plot(x,Np_t/pps*Y_C10t,'y');
 legend('C11','N13','O15','C10','Location', 'northwest');
 [f,g]=min(Ddept);
-axis([0 (ceil(g*dx)) 0 max(max(Np_t/pps*Y_C11t,Np_t/pps*Y_O15t)+0.2*max(Np_t/pps*Y_C11t,Np_t/pps*Y_O15t))]);
+axis([0 (ceil(g*dx)+0.5) 0 max(max(Np_t/pps*Y_C11t,Np_t/pps*Y_O15t)+0.2*max(Np_t/pps*Y_C11t,Np_t/pps*Y_O15t))]);
 xlabel('Depth (cm)');
 ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
@@ -610,20 +611,22 @@ Y_N13p = Y_O16_N13p + Y_N14_N13p;
 Y_O15p = Y_O16_O15p;
 Y_C10p = Y_C12_C10p;
 hold on
-plot(x,Np_p/pps*Y_C11p,'b');
-plot(x,Np_p/pps*Y_O15p,'m'); 
-plot(x,Np_p/pps*Y_N13p,'c');
-plot(x,Np_p/pps*Y_C10p,'y');
-plot(x,Np_p/pps*Y_C11p+Np_p/pps*Y_O15p+Np_p/pps*Y_N13p+Np_p/pps*Y_C10p,'k');
+%plot(x,Np_p/pps*Y_C11p,'b');
+%plot(x,Np_p/pps*Y_O15p,'m'); 
+%plot(x,Np_p/pps*Y_N13p,'c');
+%plot(x,Np_p/pps*Y_C10p,'y');
+%plot(x,Np_p/pps*Y_C11p+Np_p/pps*Y_O15p+Np_p/pps*Y_N13p+Np_p/pps*Y_C10p,'k');
 %plot(x,Y_N13p,'c')
+plot(x,Np_p/pps*Y_C11p+Np_p/pps*Y_O15p,'k')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
-legend('C11','O15','N13','C10','Total','Location', 'northwest');
+%legend('C11','O15','N13','C10','Total','Location', 'northwest');
 %legend('Total','Location', 'northwest');
+legend('C11 + O15','Location', 'northwest');
 [f,g]=min(Ddepp);
-axis([0 (ceil(g*dx)) 0 (max(Np_p/pps*Y_C11p)+0.5*max(Np_p/pps*Y_C11p))]);
+axis([0 (ceil(g*dx)) 0 (max(Np_p/pps*Y_C11p)+0.8*max(Np_p/pps*Y_C11p))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/proton/mm');
+ylabel('C11+O15 \beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 
@@ -650,16 +653,16 @@ grid on
 hold on
 Y_4 = Y_PG_O16_C12_4w;
 Y_6 = Y_PG_O16_O16_6w;
-%plot(x,Y_4,'r'); hold on
-%plot(x,Y_6,'m');
-plot(x,Np_w/pps*Y_4+Np_w/pps*Y_6,'b');
+plot(x,Np_w/pps*Y_4,'r'); hold on
+plot(x,Np_w/pps*Y_6,'m');
+%plot(x,Np_w/pps*Y_4+Np_w/pps*Y_6,'b');
 %plot(x,Y_N13p,'c')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
-legend('Total','Location', 'northwest');
+legend('4.44 MeV', '6.13 MeV','Location', 'northwest');
 [f,g]=min(Ddep);
 %axis([0 (ceil(g*dx)) 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
-axis([0 5 0 (max(Np_w/pps*Y_4+Np_w/pps*Y_6)+0.2*max(Np_w/pps*Y_4+Np_w/pps*Y_6))]);
+axis([0 (ceil(g*dx)) 0 (max(Np_w/pps*Y_4)+0.2*max(Np_w/pps*Y_4))]);
 xlabel('Depth (cm)');
 ylabel('PG/Gy/mm');
 set(gca,'FontSize',14)
@@ -692,7 +695,7 @@ plot(x,Np_p/pps*Y_6p,'m');
 %plot(x,Y_C10p,'y');
 legend('4.44 MeV', '6.13 MeV','Location', 'northwest');
 [f,g]=min(Ddepp);
-axis([0 (ceil(g*dx)) 0 (max(Np_p/pps*Y_4p)+0.2*max(Np_p/pps*Y_4p))]);
+axis([0 (ceil(g*dx)+0.3) 0 (max(Np_p/pps*Y_4p)+0.2*max(Np_p/pps*Y_4p))]);
 xlabel('Depth (cm)');
 ylabel('PG/Gy/mm');
 set(gca,'FontSize',14)

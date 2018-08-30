@@ -12,7 +12,7 @@ load('control1.mat');
 %PARAMETROS
 dx=0.01;      %Paso del intervalo (cm)
 xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=58;        %Energía inicial del haz
+E0=140;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
@@ -627,7 +627,7 @@ xlabel('Depth (cm)');
 ylabel('Dose (a.u.)')
 title('Water + Zn');
 %hold on
-plot(x,Con_w*Ddep)
+plot(x,Con_w*Ddep,'linewidth',2)
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 30 0 (max(Con_w*Ddep)+0.2*max(Con_w*Ddep))]);
@@ -641,6 +641,7 @@ Y_65w = Y_Zn66_Ga65w;
 Y_66w = Y_Zn66_Ga66w+Y_Zn67_Ga66w;
 Y_67w = Y_Zn67_Ga67w+Y_Zn68_Ga67w;
 Y_68w = Y_Zn68_Ga68w;
+Y_tw = Y_O16_C11+Y_O16_N13s+Y_O16_O15s+Y_O18_F18s
 plot(x,Np_w/pps*Y_O16_C11s,'k'); hold on
 plot(x,Np_w/pps*Y_O16_N13s,'c')
 plot(x,Np_w/pps*Y_O16_O15s,'m')

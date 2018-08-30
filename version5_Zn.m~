@@ -612,7 +612,7 @@ yyaxis right
 xlabel('Depth (cm)');
 title('Water + Zn');
 %hold on
-plot(x,Con_w*Ddep)
+plot(x,Con_w*Ddep,'linewidth',2)
 ylabel('Dose (Gy/cm³)')
 legend('Dose')
 set(gca,'FontSize',14)
@@ -637,10 +637,10 @@ plot(x,Np_w/pps*Y_66w,'b-o')
 plot(x,Np_w/pps*Y_67w,'m-o')
 plot(x,Np_w/pps*Y_68w,'y-o')
 plot(x,Np_w/pps*Y_tw,'k','linewidth',2)
-legend('C11','N13','O15','Zn64','Zn66','Zn65','Zn67','Zn68','Total','Location', 'northwest');
+legend('C11','N13','O15','Ga64','Ga66','Ga65','Ga67','Ga68','Total','Location', 'northwest');
 set(gca,'FontSize',14)
 [f,g]=min(Ddep);
-axis([ 0 g*dx+0.05*g*dx 0 (max(Np_w/pps*Y_tw)+0.5*max(Np_w/pps*Y_tw))]);
+axis([ 0 g*dx+0.05*g*dx 0 (max(Np_w/pps*Y_tw)+0.2*max(Np_w/pps*Y_tw))]);
 
 % Figure in tisssue
 figure
@@ -651,7 +651,7 @@ xlabel('Depth (cm)');
 ylabel(' Dose (a.u.)')
 title('Tissue');
 hold on
-plot(x,Con_w*Ddept)
+plot(x,Con_w*Ddept,'linewidth',2)
 ylabel('Dose (Gy/cm³)')
 legend('Dose')
 set(gca,'FontSize',14)
@@ -670,18 +670,21 @@ Y_65t = Y_Zn66_Ga65t;
 Y_66t = Y_Zn66_Ga66t+Y_Zn67_Ga66t;
 Y_67t = Y_Zn67_Ga67t+Y_Zn68_Ga67t;
 Y_68t = Y_Zn68_Ga68t;
+Y_tt = Y_64t+Y_65t+Y_68t+Y_67t+Y_66t+Y_C11t+Y_N13t+Y_O15t;
 plot(x,Np_t/pps*Y_C11t,'k'); hold on
 plot(x,Np_t/pps*Y_N13t,'c')
 plot(x,Np_t/pps*Y_O15t,'m')
 plot(x,Np_t/pps*Y_C10t,'y');
-plot(x,Np_t/pps*Y_64t,'go')
-plot(x,Np_t/pps*Y_65t,'ko')
-plot(x,Np_t/pps*Y_66t,'bo')
-plot(x,Np_t/pps*Y_67t,'mo')
-plot(x,Np_t/pps*Y_68t,'yo')
-legend('C11','N13','O15','C10','Zn64','Zn66','Zn65','Zn67','Zn68','Location', 'northwest');
+plot(x,Np_t/pps*Y_64t,'g-o')
+plot(x,Np_t/pps*Y_65t,'r-o')
+plot(x,Np_t/pps*Y_66t,'b-o')
+plot(x,Np_t/pps*Y_67t,'m-o')
+plot(x,Np_t/pps*Y_68t,'y-o')
+plot(x,Np_t/pps*Y_tt,'k','linewidth',2)
+
+legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location', 'northwest');
 [f,g]=min(Ddept);
-axis([0 (ceil(g*dx)) 0 (max(Np_t/pps*Y_O15t)+0.5*max(Np_t/pps*Y_O15t))]);
+axis([0 (ceil(g*dx)) 0 (max(Np_t/pps*Y_tt)+0.2*max(Np_t/pps*Y_tt))]);
 xlabel('Depth (cm)');
 ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
@@ -695,7 +698,7 @@ xlabel('Depth (cm)');
 ylabel('Dose (a.u.)')
 title('Adipose');
 hold on
-plot(x,Con_a*Ddepa)
+plot(x,Con_a*Ddepa,'linewidth',2)
 ylabel('Dose (Gy/cm³)')
 legend('Dose')
 set(gca,'FontSize',14)
@@ -714,16 +717,18 @@ Y_65a = Y_Zn66_Ga65a;
 Y_66a = Y_Zn66_Ga66a+Y_Zn67_Ga66a;
 Y_67a = Y_Zn67_Ga67a+Y_Zn68_Ga67a;
 Y_68a = Y_Zn68_Ga68a;
+Y_ta = Y_64a+Y_65a+Y_68a+Y_67a+Y_66a+Y_C11a+Y_N13a+Y_O15a;
 plot(x,Np_a/pps*Y_C11a,'k'); hold on
 plot(x,Np_a/pps*Y_N13a,'c')
 plot(x,Np_a/pps*Y_O15a,'m')
 plot(x,Np_a/pps*Y_C10a,'y');
-plot(x,Np_a/pps*Y_64a,'go')
-plot(x,Np_a/pps*Y_65a,'ko')
-plot(x,Np_a/pps*Y_66a,'bo')
-plot(x,Np_a/pps*Y_67a,'mo')
-plot(x,Np_a/pps*Y_68a,'yo')
-legend('C11','N13','O15','C10','Zn64','Zn66','Zn65','Zn67','Zn68','Location', 'northwest');
+plot(x,Np_a/pps*Y_64a,'g-o')
+plot(x,Np_a/pps*Y_65a,'r-o')
+plot(x,Np_a/pps*Y_66a,'b-o')
+plot(x,Np_a/pps*Y_67a,'m-o')
+plot(x,Np_a/pps*Y_68a,'y-o')
+plot(x,Np_a/pps*Y_ta,'k','linewidth',2)
+legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location', 'northwest');
 [f,g]=min(Ddepa);
 axis([0 (ceil(g*dx)) 0 (max(Np_a/pps*Y_C11a)+0.5*max(Np_a/pps*Y_C11a))]);
 xlabel('Depth (cm)');
