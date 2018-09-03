@@ -11,8 +11,8 @@ load('control1.mat');
 
 %PARAMETROS
 dx=0.1;      %Paso del intervalo (cm)
-xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=58;        %Energía inicial del haz
+xref=15;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=140;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación

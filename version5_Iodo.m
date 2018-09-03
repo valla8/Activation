@@ -10,41 +10,36 @@ clear all;close all;
 load('control1.mat');
 
 %PARAMETROS
-dx=0.05;      %Paso del intervalo (cm)
-xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=58;        %Energía inicial del haz
+dx=0.02;      %Paso del intervalo (cm)
+xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=140;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
 pps=1;         %protones/segundo
-Zn_fraction = 0.1;
 MeVJ=1.6e-13;
+I_fraction = 0.10;
 %% Composiciones
 
 % Composición materiales
 % Material H (%) C (%) N (%) O (%) P(%) Ca(%) I(%)  Density (g ml?1)
 % Soft tissue 0.102 0.143 0.034 0.708 0 0 0 1.06
 % Water: 0.0305 0 0 0.9695 0 0 0 1.00
-Zn64_ab = 0.492; %4
-Zn66_ab = 0.277; %5
-Zn68_ab = 0.185; %6
-Zn67_ab = 0.04
-
-Comp_Zn = [0 0 0 0 0 0 Zn64_ab Zn66_ab Zn68_ab];
-Comp_tissue = [0.619977 0.118053 0.0205881 0.240345 0 0 0 0 0 ];
-Comp_water = [0.6687 0 0 0.3313 0 0 0 0 0];
-Comp_tissue_Zn =Zn_fraction*Comp_Zn + (1-Zn_fraction)* Comp_tissue;
-Comp_water_Zn = Zn_fraction*Comp_Zn + (1-Zn_fraction)* Comp_water;
+Comp_tissue = [0.619977 0.118053 0.0205881 0.240345 0 0 0 ];
+Comp_water = [0.6687 0 0 0.3313 0 0 0];
+Comp_I = [0 0 0 0 0 0 1];
+Comp_tissue_I =I_fraction*Comp_I + (1-I_fraction)* Comp_tissue;
+Comp_water_I = I_fraction*Comp_I + (1-I_fraction)*Comp_water;
 % Material H (%) C (%) N (%) O (%) P (%) Ca(%)  Density (g ml?1)
-Comp_bone=[0.475402    0.121899    0.0304112    0.282845    0.0343791    0.0531337 0 0 0];
-W_ele = [1.00794 12.011 14.00674 15.9994 30.973762 40.078 65.38 65.38 65.38];
-Comp_adipose = [0.634657 0.284  0.0030464 0.0777462 0 0 0 0 0];
-Comp_PMMA= [0.535002   0.332244 0  0.132754 0 0 0 0 0];
-Comp_PMMA_w= [0.080   0.60 0  0.32 0 0 0 0 0];
-Comp_bone_Zn =Zn_fraction*Comp_Zn + (1-Zn_fraction)* Comp_bone;
-Comp_adipose_Zn = Zn_fraction*Comp_Zn + (1-Zn_fraction)* Comp_adipose;
-Comp_PMMA_Zn = Zn_fraction*Comp_Zn + (1-Zn_fraction)* Comp_PMMA;
+Comp_bone=[0.475402    0.121899    0.0304112    0.282845    0.0343791    0.0531337 0];
+W_ele = [1.00794 12.011 14.00674 15.9994 30.973762 40.078 126.9];
+Comp_adipose = [0.634657 0.284  0.0030464 0.0777462 0 0 0];
+Comp_PMMA= [0.535002   0.332244 0  0.132754 0 0 0];
+Comp_PMMA_w= [0.080   0.60 0  0.32 0 0 0];
+Comp_bone_I =I_fraction*Comp_I + (1-I_fraction)* Comp_bone;
+Comp_adipose_I = I_fraction*Comp_I + (1-I_fraction)* Comp_adipose;
+Comp_PMMA_I = I_fraction*Comp_I + (1-I_fraction)* Comp_PMMA;
 
 
 AvNmbr = 6.022140857e23;
@@ -61,14 +56,14 @@ rho_PMMA= 1.18; %g/cm3
 %Densidades Atomicas (A falta de las masas molares usamos
 %sum(Comp_bone.*W_ele)) CORREGIR
 !rho_tissue_A = 4.6243E+22; % atoms/cm3
-rho_tissue_A = (1-Zn_fraction)*AvNmbr*rho_tissue/sum(Comp_tissue.*W_ele);  % atoms/cm3
-rho_bone_A = (1-Zn_fraction)*AvNmbr*rho_bone/sum(Comp_bone.*W_ele);  % atoms/cm3
-rho_adipose_A = (1-Zn_fraction)*AvNmbr*rho_adipose/sum(Comp_adipose.*W_ele);  % atoms/cm3
-rho_PMMA_A = (1-Zn_fraction)*AvNmbr*rho_PMMA/sum(Comp_PMMA_w.*W_ele);  % atoms/cm3
+rho_tissue_A = (1-I_fraction)*AvNmbr*rho_tissue/sum(Comp_tissue.*W_ele);  % atoms/cm3
+rho_bone_A = (1-I_fraction)*AvNmbr*rho_bone/sum(Comp_bone.*W_ele);  % atoms/cm3
+rho_adipose_A = (1-I_fraction)*AvNmbr*rho_adipose/sum(Comp_adipose.*W_ele);  % atoms/cm3
+rho_PMMA_A = (1-I_fraction)*AvNmbr*rho_PMMA/sum(Comp_PMMA_w.*W_ele);  % atoms/cm3
 %rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
-rho_w_A =  (1-Zn_fraction)*rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
-ZnAtomicWeight = 65.38; % g/mol
-rho_Zn_A = Zn_fraction * rho_Zn * AvNmbr / ZnAtomicWeight; % molecules / cm3
+rho_w_A =  (1-I_fraction)*rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
+I_Molar = 126.9; %g/mol
+rho_I_A = I_fraction * rho_I * AvNmbr / I_Molar; % molecules / cm3
 
 
 
@@ -76,19 +71,19 @@ rho_Zn_A = Zn_fraction * rho_Zn * AvNmbr / ZnAtomicWeight; % molecules / cm3
 %abundancia. Se hace para cada material bone(b) tissue(t) PMMA(p)
 %adipose(a) water ()
 rho_O16_A = rho_w_A * O16_ab; % atoms/cm3
-rho_O16_Ab = rho_bone_A * Comp_bone_Zn(4) * O16_ab;
-rho_N14_Ab = rho_bone_A * Comp_bone_Zn(3) * N14_ab;
-rho_C12_Ab = rho_bone_A * Comp_bone_Zn(2) * C12_ab;
-rho_Ca44_Ab = rho_bone_A * Comp_bone_Zn(6) * Ca44_ab;
+rho_O16_Ab = rho_bone_A * Comp_bone(4) * O16_ab;
+rho_N14_Ab = rho_bone_A * Comp_bone(3) * N14_ab;
+rho_C12_Ab = rho_bone_A * Comp_bone(2) * C12_ab;
+rho_Ca44_Ab = rho_bone_A * Comp_bone(6) * Ca44_ab;
 rho_O16_At = rho_tissue_A * Comp_tissue_Zn(4) * O16_ab;
 rho_N14_At = rho_tissue_A * Comp_tissue_Zn(3) * N14_ab;
 rho_C12_At = rho_tissue_A * Comp_tissue_Zn(2) * C12_ab;
-rho_O16_Ap = rho_PMMA_A * Comp_PMMA_Zn(4) * O16_ab;
-rho_N14_Ap = rho_PMMA_A * Comp_PMMA_Zn(3) * N14_ab;
-rho_C12_Ap = rho_PMMA_A * Comp_PMMA_Zn(2) * C12_ab;
-rho_O16_Aa = rho_adipose_A * Comp_adipose_Zn(4) * O16_ab;
-rho_N14_Aa = rho_adipose_A * Comp_adipose_Zn(3) * N14_ab;
-rho_C12_Aa = rho_adipose_A * Comp_adipose_Zn(2) * C12_ab;
+rho_O16_Ap = rho_PMMA_A * Comp_PMMA(4) * O16_ab;
+rho_N14_Ap = rho_PMMA_A * Comp_PMMA(3) * N14_ab;
+rho_C12_Ap = rho_PMMA_A * Comp_PMMA(2) * C12_ab;
+rho_O16_Aa = rho_adipose_A * Comp_adipose(4) * O16_ab;
+rho_N14_Aa = rho_adipose_A * Comp_adipose(3) * N14_ab;
+rho_C12_Aa = rho_adipose_A * Comp_adipose(2) * C12_ab;
  
 
 %% Calcular (sin straggling)
@@ -128,13 +123,10 @@ Y_PG_O16_C12_4w = zeros(size(x));
 Y_PG_N14_N14_1w = zeros(size(x));
 Y_PG_N14_N14_2w = zeros(size(x));
 Y_PG_O16_O16_6w = zeros(size(x));
-Y_Zn64_Ga64w = zeros(size(x));
-Y_Zn66_Ga66w = zeros(size(x));
-Y_Zn67_Ga67w = zeros(size(x));
-Y_Zn68_Ga68w = zeros(size(x));
-Y_Zn66_Ga65w = zeros(size(x));
-Y_Zn68_Ga67w = zeros(size(x));
-Y_Zn67_Ga66w = zeros(size(x));
+Y_I127_Xe127w = zeros(size(x));
+Y_I127_Xe125w = zeros(size(x));
+Y_I127_Xe122w = zeros(size(x));
+Y_I127_Xe123w = zeros(size(x));
 
 % In tissue (simplified form only)
 Y_O16_C11t = zeros(size(x));
@@ -150,13 +142,10 @@ Y_PG_O16_C12_4t = zeros(size(x));
 Y_PG_N14_N14_1t = zeros(size(x));
 Y_PG_N14_N14_2t = zeros(size(x));
 Y_PG_O16_O16_6t = zeros(size(x));
-Y_Zn64_Ga64t = zeros(size(x));
-Y_Zn66_Ga66t = zeros(size(x));
-Y_Zn67_Ga67t = zeros(size(x));
-Y_Zn68_Ga68t = zeros(size(x));
-Y_Zn66_Ga65t = zeros(size(x));
-Y_Zn68_Ga67t = zeros(size(x));
-Y_Zn67_Ga66t = zeros(size(x));
+Y_I127_Xe127t = zeros(size(x));
+Y_I127_Xe125t = zeros(size(x));
+Y_I127_Xe122t = zeros(size(x));
+Y_I127_Xe123t = zeros(size(x));
 
 % In bone (simplified form only)
 Y_O16_C11b = zeros(size(x));
@@ -173,13 +162,10 @@ Y_PG_O16_C12_4b = zeros(size(x));
 Y_PG_N14_N14_1b = zeros(size(x));
 Y_PG_N14_N14_2b = zeros(size(x));
 Y_PG_O16_O16_6b = zeros(size(x));
-Y_Zn64_Ga64b = zeros(size(x));
-Y_Zn66_Ga66b = zeros(size(x));
-Y_Zn67_Ga67b = zeros(size(x));
-Y_Zn68_Ga68b = zeros(size(x));
-Y_Zn66_Ga65b = zeros(size(x));
-Y_Zn68_Ga67b = zeros(size(x));
-Y_Zn67_Ga66b = zeros(size(x));
+Y_I127_Xe127b = zeros(size(x));
+Y_I127_Xe125b = zeros(size(x));
+Y_I127_Xe122b = zeros(size(x));
+Y_I127_Xe123b = zeros(size(x));
 
 % In adipose (simplified form only)
 Y_O16_C11a = zeros(size(x));
@@ -195,13 +181,10 @@ Y_PG_O16_C12_4a = zeros(size(x));
 Y_PG_N14_N14_1a = zeros(size(x));
 Y_PG_N14_N14_2a = zeros(size(x));
 Y_PG_O16_O16_6a = zeros(size(x));
-Y_Zn64_Ga64a = zeros(size(x));
-Y_Zn66_Ga66a = zeros(size(x));
-Y_Zn67_Ga67a = zeros(size(x));
-Y_Zn68_Ga68a = zeros(size(x));
-Y_Zn66_Ga65a = zeros(size(x));
-Y_Zn68_Ga67a = zeros(size(x));
-Y_Zn67_Ga66a = zeros(size(x));
+Y_I127_Xe127a = zeros(size(x));
+Y_I127_Xe125a = zeros(size(x));
+Y_I127_Xe122a = zeros(size(x));
+Y_I127_Xe123a = zeros(size(x));
 
 % In PMMA (simplified form only)
 Y_O16_C11p = zeros(size(x));
@@ -218,13 +201,10 @@ Y_PG_N14_N14_1p = zeros(size(x));
 Y_PG_N14_N14_2p = zeros(size(x));
 Y_PG_O16_O16_6p = zeros(size(x));
 Y_PG_trap = zeros(size(x));
-Y_Zn64_Ga64p = zeros(size(x));
-Y_Zn66_Ga66p = zeros(size(x));
-Y_Zn67_Ga67p = zeros(size(x));
-Y_Zn68_Ga68p = zeros(size(x));
-Y_Zn66_Ga65p = zeros(size(x));
-Y_Zn68_Ga67p = zeros(size(x));
-Y_Zn67_Ga66p = zeros(size(x));
+Y_I127_Xe127p = zeros(size(x));
+Y_I127_Xe125p = zeros(size(x));
+Y_I127_Xe122p = zeros(size(x));
+Y_I127_Xe123p = zeros(size(x));
 
 
 %CALCULO YIELD
@@ -235,26 +215,26 @@ for i=1:(numel(x)-1)
     %Calculamos el poder de frenado para la energía con la que llega el
     %protón a la lámina.
     S_w = max(0,1000*S_w_F(currentE*1000)); % MeV/(g/cm2)
-    S_iw = max(0,1000*S_Zn_F(currentE*1000)); % MeV/(g/cm2) 
+    S_iw = max(0,1000*S_i_F(currentE*1000)); % MeV/(g/cm2) 
     
     S_t = max(0,1000*S_t_F(currentEt*1000)); % MeV/(g/cm2)
-    S_it = max(0,1000*S_Zn_F(currentEt*1000));
+    S_it = max(0,1000*S_i_F(currentEt*1000));
     
     S_b = max(0,1000*S_b_F(currentEb*1000));
-    S_ib = max(0,1000*S_Zn_F(currentEb*1000));
+    S_ib = max(0,1000*S_i_F(currentEb*1000));
     
     S_a = max(0,1000*S_a_F(currentEa*1000));
-    S_ia = max(0,1000*S_Zn_F(currentEa*1000));
+    S_ia = max(0,1000*S_i_F(currentEa*1000));
     
     S_p = max(0,1000*S_p_F(currentEp*1000));
-    S_ip = max(0,1000*S_Zn_F(currentEp*1000));
+    S_ip = max(0,1000*S_i_F(currentEp*1000));
     
     %Multiplicamospor la densidad al poder de frenado
-    S1 = (S_w*rho_w*(1-Zn_fraction) + S_iw*rho_Zn*Zn_fraction);; % MeV/cm
-    S1t = (S_t*rho_tissue)*(1-Zn_fraction) + S_it*rho_Zn*Zn_fraction; % MeV/cm
-    S1b = (S_b*rho_bone)*(1-Zn_fraction) + S_ib*rho_Zn*Zn_fraction; % MeV/cm
-    S1a = (S_a*rho_adipose)*(1-Zn_fraction) + S_ia*rho_Zn*Zn_fraction; % MeV/cm
-    S1p = (S_p*rho_PMMA)*(1-Zn_fraction) + S_ip*rho_Zn*Zn_fraction; % MeV/cm
+    S1 = (S_w*rho_w*(1-I_fraction) + S_iw*rho_I*I_fraction);; % MeV/cm
+    S1t = (S_t*rho_tissue)*(1-I_fraction) + S_it*rho_I*I_fraction; % MeV/cm
+    S1b = (S_b*rho_bone)*(1-I_fraction) + S_ib*rho_I*I_fraction; % MeV/cm
+    S1a = (S_a*rho_adipose)*(1-I_fraction) + S_ia*rho_I*I_fraction; % MeV/cm
+    S1p = (S_p*rho_PMMA)*(1-I_fraction) + S_ip*rho_I*I_fraction; % MeV/cm
     
     %Calculamos la energía que pierde el protón al atravesar la lámina (se
     %supone que toda la pérdida se hace al final).
@@ -335,28 +315,22 @@ for i=1:(numel(x)-1)
     sigma_PG_N14_1w = 0.5 * (max(0,PG_N14_N14_1_F(E1)) + max(0,PG_N14_N14_1_F(E2)));
     sigma_PG_N14_2w = 0.5 * (max(0,PG_N14_N14_2_F(E1)) + max(0,PG_N14_N14_2_F(E2)));
     sigma_PG_O16_6w = 0.5 * (max(0,PG_O16_O16_6_F(E1)) + max(0,PG_O16_O16_6_F(E2)));
-    sigma_C11_mean = 0.5 * (max(0,O16_C11_F(E1)) + (max(0,O16_C11_F(E2))));
-    sigma_N13_mean = 0.5 * (max(0,O16_N13_F(E1)) + (max(0,O16_N13_F(E2))));
-    sigma_O15_mean = 0.5 * (max(0,O16_O15_F(E1)) +(max(0, O16_O15_F(E2))));
-    sigma_64Ga_mean = 0.5 * (max(0,Zn64_Ga64_F(E1)) +max(0,Zn64_Ga64_F(E2)));
-    sigma_66Ga_mean = 0.5 * (max(0,Zn66_Ga66_F(E1)) + max(0,Zn66_Ga66_F(E2)));
-    sigma_68Ga_mean = 0.5 * (max(0,Zn68_Ga68_F(E1)) + max(0,Zn68_Ga68_F(E2)));
-    sigma_67Ga_mean = 0.5 * (max(0,Zn67_Ga67_F(E1)) + max(0,Zn67_Ga67_F(E2)));
-    sigma_65Ga_mean = 0.5 * (max(0,Zn66_Ga65_F(E1)) +max(0,Zn66_Ga65_F(E2)));
-    sigma_66Ga_mean2 = 0.5 * (max(0,Zn67_Ga66_F(E1)) + max(0,Zn67_Ga66_F(E2)));
-    sigma_67Ga_mean2 = 0.5 * (max(0,Zn68_Ga67_F(E1)) + max(0,Zn68_Ga67_F(E2)));
+    sigma_C11_mean = 0.5 * (O16_C11_F(E1) + O16_C11_F(E2));
+    sigma_N13_mean = 0.5 * (O16_N13_F(E1) + O16_N13_F(E2));
+    sigma_O15_mean = 0.5 * (O16_O15_F(E1) + O16_O15_F(E2));
+    sigma_127Xe_mean = 0.5 * (max(0,I127_Xe127_F(E1)) +max(0,I127_Xe127_F(E2)));
+    sigma_125Xe_mean = 0.5 * (max(0,I127_Xe125_F(E1)) + max(0,I127_Xe125_F(E2)));
+    sigma_123Xe_mean = 0.5 * (max(0,I127_Xe123_F(E1)) + max(0,I127_Xe123_F(E2)));
+    sigma_122Xe_mean = 0.5 * (max(0,I127_Xe122_F(E1)) + max(0,I127_Xe122_F(E2)));
     Y_O16_C11s(i) = pps * rho_O16_A * sigma_C11_mean * 1e-24 * dx;
     Y_O16_N13s(i) = pps * rho_O16_A * sigma_N13_mean * 1e-24 * dx;
     Y_O16_O15s(i) = pps * rho_O16_A * sigma_O15_mean * 1e-24 * dx;
     Y_PG_O16_C12_4w(i) = pps * rho_O16_A * sigma_PG_O16_4w * 1e-24 * dx;
     Y_PG_O16_O16_6w(i) = pps * rho_O16_A * sigma_PG_O16_6w * 1e-24 * dx;
-    Y_Zn64_Ga64w(i) = Zn64_ab *pps * rho_Zn_A * sigma_64Ga_mean * 1e-24 * dx;
-    Y_Zn66_Ga66w(i) = Zn66_ab *pps * rho_Zn_A * sigma_66Ga_mean * 1e-24 * dx;
-    Y_Zn68_Ga68w(i) = Zn68_ab *pps * rho_Zn_A * sigma_68Ga_mean * 1e-24 * dx;
-    Y_Zn67_Ga67w(i) = Zn67_ab *pps * rho_Zn_A * sigma_67Ga_mean * 1e-24 * dx;
-    Y_Zn66_Ga65w(i) = Zn66_ab *pps * rho_Zn_A * sigma_65Ga_mean * 1e-24 * dx;
-    Y_Zn67_Ga66w(i) = Zn67_ab *pps * rho_Zn_A * sigma_66Ga_mean2 * 1e-24 * dx;
-    Y_Zn68_Ga67w(i) = Zn68_ab *pps * rho_Zn_A * sigma_67Ga_mean2 * 1e-24 * dx;
+    Y_I127_Xe127w(i) = pps * rho_I_A * sigma_127Xe_mean * 1e-24 * dx;
+    Y_I127_Xe125w(i) = pps * rho_I_A * sigma_125Xe_mean * 1e-24 * dx;
+    Y_I127_Xe123w(i) = pps * rho_I_A * sigma_123Xe_mean * 1e-24 * dx;
+    Y_I127_Xe122w(i) = pps * rho_I_A * sigma_122Xe_mean * 1e-24 * dx;
 
     
     % Tissue (simplified only)
@@ -373,13 +347,10 @@ for i=1:(numel(x)-1)
     sigma_PG_N14_1t = 0.5 * (max(0,PG_N14_N14_1_F(E1t)) + max(0,PG_N14_N14_1_F(E2t)));
     sigma_PG_N14_2t = 0.5 * (max(0,PG_N14_N14_2_F(E1t)) + max(0,PG_N14_N14_2_F(E2t)));
     sigma_PG_O16_6t = 0.5 * (max(0,PG_O16_O16_6_F(E1t)) + max(0,PG_O16_O16_6_F(E2t)));
-    sigma_64Ga_meant = 0.5 * (max(0,Zn64_Ga64_F(E1t)) +max(0,Zn64_Ga64_F(E2t)));
-    sigma_66Ga_meant = 0.5 * (max(0,Zn66_Ga66_F(E1t)) + max(0,Zn66_Ga66_F(E2t)));
-    sigma_68Ga_meant = 0.5 * (max(0,Zn68_Ga68_F(E1t)) + max(0,Zn68_Ga68_F(E2t)));
-    sigma_67Ga_meant = 0.5 * (max(0,Zn67_Ga67_F(E1t)) + max(0,Zn67_Ga67_F(E2t)));
-    sigma_65Ga_meant = 0.5 * (max(0,Zn66_Ga65_F(E1t)) +max(0,Zn66_Ga65_F(E2t)));
-    sigma_66Ga_mean2t = 0.5 * (max(0,Zn67_Ga66_F(E1t)) + max(0,Zn67_Ga66_F(E2t)));
-    sigma_67Ga_mean2t = 0.5 * (max(0,Zn68_Ga67_F(E1t)) + max(0,Zn68_Ga67_F(E2t)));
+    sigma_127Xe_meant = 0.5 * (max(0,I127_Xe127_F(E1t)) +max(0,I127_Xe127_F(E2t)));
+    sigma_125Xe_meant = 0.5 * (max(0,I127_Xe125_F(E1t)) + max(0,I127_Xe125_F(E2t)));
+    sigma_123Xe_meant = 0.5 * (max(0,I127_Xe123_F(E1t)) + max(0,I127_Xe123_F(E2t)));
+    sigma_122Xe_meant = 0.5 * (max(0,I127_Xe122_F(E1t)) + max(0,I127_Xe122_F(E2t)));
     Y_O16_C11t(i) = pps * rho_O16_At * sigma_C11_meant * 1e-24 * dx;
     Y_O16_N13t(i) = pps * rho_O16_At * sigma_N13_meant * 1e-24 * dx;
     Y_O16_O15t(i) = pps * rho_O16_At * sigma_O15_meant * 1e-24 * dx;
@@ -393,13 +364,10 @@ for i=1:(numel(x)-1)
     Y_PG_N14_N14_1t(i) = pps * rho_N14_At * sigma_PG_N14_1t * 1e-24 * dx;
     Y_PG_N14_N14_2t(i) = pps * rho_N14_At * sigma_PG_N14_2t * 1e-24 * dx;
     Y_PG_O16_O16_6t(i) = pps * rho_O16_At * sigma_PG_O16_6t * 1e-24 * dx;
-    Y_Zn64_Ga64t(i) = Zn64_ab * pps * rho_Zn_A * sigma_64Ga_meant * 1e-24 * dx;
-    Y_Zn66_Ga66t(i) = Zn66_ab *  pps * rho_Zn_A * sigma_66Ga_meant * 1e-24 * dx;
-    Y_Zn68_Ga68t(i) = Zn68_ab *pps * rho_Zn_A * sigma_68Ga_meant * 1e-24 * dx;
-    Y_Zn67_Ga67t(i) = Zn67_ab *pps * rho_Zn_A * sigma_67Ga_meant * 1e-24 * dx;
-    Y_Zn66_Ga65t(i) = Zn66_ab *pps * rho_Zn_A * sigma_65Ga_meant * 1e-24 * dx;
-    Y_Zn67_Ga66t(i) = Zn67_ab *pps * rho_Zn_A * sigma_66Ga_mean2t * 1e-24 * dx;
-    Y_Zn68_Ga67t(i) = Zn68_ab *pps * rho_Zn_A * sigma_67Ga_mean2t * 1e-24 * dx;
+    Y_I127_Xe127t(i) = pps * rho_I_A * sigma_127Xe_meant * 1e-24 * dx;
+    Y_I127_Xe125t(i) = pps * rho_I_A * sigma_125Xe_meant * 1e-24 * dx;
+    Y_I127_Xe123t(i) = pps * rho_I_A * sigma_123Xe_meant * 1e-24 * dx;
+    Y_I127_Xe122t(i) = pps * rho_I_A * sigma_122Xe_meant * 1e-24 * dx;
 
     
     
@@ -419,13 +387,10 @@ for i=1:(numel(x)-1)
     sigma_PG_N14_1b = 0.5 * (max(0,PG_N14_N14_1_F(E1b)) + max(0,PG_N14_N14_1_F(E2b)));
     sigma_PG_N14_2b = 0.5 * (max(0,PG_N14_N14_2_F(E1b)) + max(0,PG_N14_N14_2_F(E2b)));
     sigma_PG_O16_6b = 0.5 * (max(0,PG_O16_O16_6_F(E1b)) + max(0,PG_O16_O16_6_F(E2b)));
-    sigma_64Ga_meanb = 0.5 * (max(0,Zn64_Ga64_F(E1b)) +max(0,Zn64_Ga64_F(E2b)));
-    sigma_66Ga_meanb = 0.5 * (max(0,Zn66_Ga66_F(E1b)) + max(0,Zn66_Ga66_F(E2b)));
-    sigma_68Ga_meanb = 0.5 * (max(0,Zn68_Ga68_F(E1b)) + max(0,Zn68_Ga68_F(E2b)));
-    sigma_67Ga_meanb = 0.5 * (max(0,Zn67_Ga67_F(E1b)) + max(0,Zn67_Ga67_F(E2b)));
-    sigma_65Ga_meanb = 0.5 * (max(0,Zn66_Ga65_F(E1b)) +max(0,Zn66_Ga65_F(E2b)));
-    sigma_66Ga_mean2b = 0.5 * (max(0,Zn67_Ga66_F(E1b)) + max(0,Zn67_Ga66_F(E2b)));
-    sigma_67Ga_mean2b = 0.5 * (max(0,Zn68_Ga67_F(E1b)) + max(0,Zn68_Ga67_F(E2b)));
+    sigma_127Xe_meanb = 0.5 * (max(0,I127_Xe127_F(E1b)) +max(0,I127_Xe127_F(E2b)));
+    sigma_125Xe_meanb = 0.5 * (max(0,I127_Xe125_F(E1b)) + max(0,I127_Xe125_F(E2b)));
+    sigma_123Xe_meanb = 0.5 * (max(0,I127_Xe123_F(E1b)) + max(0,I127_Xe123_F(E2b)));
+    sigma_122Xe_meanb = 0.5 * (max(0,I127_Xe122_F(E1b)) + max(0,I127_Xe122_F(E2b)));
     Y_O16_C11b(i) = pps * rho_O16_Ab * sigma_C11_meanb * 1e-24 * dx;
     Y_O16_N13b(i) = pps * rho_O16_Ab * sigma_N13_meanb * 1e-24 * dx;
     Y_O16_O15b(i) = pps * rho_O16_Ab * sigma_O15_meanb * 1e-24 * dx;
@@ -440,13 +405,10 @@ for i=1:(numel(x)-1)
     Y_PG_N14_N14_1b(i) = pps * rho_N14_Ab * sigma_PG_N14_1b * 1e-24 * dx;
     Y_PG_N14_N14_2b(i) = pps * rho_N14_Ab * sigma_PG_N14_2b * 1e-24 * dx;
     Y_PG_O16_O16_6b(i) = pps * rho_O16_Ab * sigma_PG_O16_6b * 1e-24 * dx;
-    Y_Zn64_Ga64b(i) = Zn64_ab *pps * rho_Zn_A * sigma_64Ga_meanb * 1e-24 * dx;
-    Y_Zn66_Ga66b(i) = Zn66_ab *pps * rho_Zn_A * sigma_66Ga_meanb * 1e-24 * dx;
-    Y_Zn68_Ga68b(i) = Zn68_ab *pps * rho_Zn_A * sigma_68Ga_meanb * 1e-24 * dx;
-    Y_Zn67_Ga67b(i) = Zn67_ab *pps * rho_Zn_A * sigma_67Ga_meanb * 1e-24 * dx;
-    Y_Zn66_Ga65b(i) = Zn66_ab *pps * rho_Zn_A * sigma_65Ga_meanb * 1e-24 * dx;
-    Y_Zn67_Ga66b(i) = Zn67_ab *pps * rho_Zn_A * sigma_66Ga_mean2b * 1e-24 * dx;
-    Y_Zn68_Ga67b(i) = Zn68_ab *pps * rho_Zn_A * sigma_67Ga_mean2b * 1e-24 * dx;
+    Y_I127_Xe127b(i) = pps * rho_I_A * sigma_127Xe_meanb * 1e-24 * dx;
+    Y_I127_Xe125b(i) = pps * rho_I_A * sigma_125Xe_meanb * 1e-24 * dx;
+    Y_I127_Xe123b(i) = pps * rho_I_A * sigma_123Xe_meanb * 1e-24 * dx;
+    Y_I127_Xe122b(i) = pps * rho_I_A * sigma_122Xe_meanb * 1e-24 * dx;
     
         % Adipose (simplified only)
 
@@ -463,13 +425,10 @@ for i=1:(numel(x)-1)
     sigma_PG_N14_1a = 0.5 * (max(0,PG_N14_N14_1_F(E1a)) + max(0,PG_N14_N14_1_F(E2a)));
     sigma_PG_N14_2a = 0.5 * (max(0,PG_N14_N14_2_F(E1a)) + max(0,PG_N14_N14_2_F(E2a)));
     sigma_PG_O16_6a = 0.5 * (max(0,PG_O16_O16_6_F(E1a)) + max(0,PG_O16_O16_6_F(E2a)));
-    sigma_64Ga_meana = 0.5 * (max(0,Zn64_Ga64_F(E1a)) +max(0,Zn64_Ga64_F(E2a)));
-    sigma_66Ga_meana = 0.5 * (max(0,Zn66_Ga66_F(E1a)) + max(0,Zn66_Ga66_F(E2a)));
-    sigma_68Ga_meana = 0.5 * (max(0,Zn68_Ga68_F(E1a)) + max(0,Zn68_Ga68_F(E2a)));
-    sigma_67Ga_meana = 0.5 * (max(0,Zn67_Ga67_F(E1a)) + max(0,Zn67_Ga67_F(E2a)));
-    sigma_65Ga_meana = 0.5 * (max(0,Zn66_Ga65_F(E1a)) +max(0,Zn66_Ga65_F(E2a)));
-    sigma_66Ga_mean2a = 0.5 * (max(0,Zn67_Ga66_F(E1a)) + max(0,Zn67_Ga66_F(E2a)));
-    sigma_67Ga_mean2a = 0.5 * (max(0,Zn68_Ga67_F(E1a)) + max(0,Zn68_Ga67_F(E2a)));
+    sigma_127Xe_meana = 0.5 * (max(0,I127_Xe127_F(E1a)) +max(0,I127_Xe127_F(E2a)));
+    sigma_125Xe_meana = 0.5 * (max(0,I127_Xe125_F(E1a)) + max(0,I127_Xe125_F(E2a)));
+    sigma_123Xe_meana = 0.5 * (max(0,I127_Xe123_F(E1a)) + max(0,I127_Xe123_F(E2a)));
+    sigma_122Xe_meana = 0.5 * (max(0,I127_Xe122_F(E1a)) + max(0,I127_Xe122_F(E2a)));
     Y_O16_C11a(i) = pps * rho_O16_Aa * sigma_C11_meana * 1e-24 * dx;
     Y_O16_N13a(i) = pps * rho_O16_Aa * sigma_N13_meana * 1e-24 * dx;
     Y_O16_O15a(i) = pps * rho_O16_Aa * sigma_O15_meana * 1e-24 * dx;
@@ -483,13 +442,10 @@ for i=1:(numel(x)-1)
     Y_PG_N14_N14_1a(i) = pps * rho_N14_Aa * sigma_PG_N14_1a * 1e-24 * dx;
     Y_PG_N14_N14_2a(i) = pps * rho_N14_Aa * sigma_PG_N14_2a * 1e-24 * dx;
     Y_PG_O16_O16_6a(i) = pps * rho_O16_Aa * sigma_PG_O16_6a * 1e-24 * dx;
-    Y_Zn64_Ga64a(i) = Zn64_ab *pps * rho_Zn_A * sigma_64Ga_meana * 1e-24 * dx;
-    Y_Zn66_Ga66a(i) = Zn66_ab *pps * rho_Zn_A * sigma_66Ga_meana * 1e-24 * dx;
-    Y_Zn68_Ga68a(i) = Zn68_ab *pps * rho_Zn_A * sigma_68Ga_meana * 1e-24 * dx;
-    Y_Zn67_Ga67a(i) = Zn67_ab *pps * rho_Zn_A * sigma_67Ga_meana * 1e-24 * dx;
-    Y_Zn66_Ga65a(i) = Zn66_ab *pps * rho_Zn_A * sigma_65Ga_meana * 1e-24 * dx;
-    Y_Zn67_Ga66a(i) = Zn67_ab *pps * rho_Zn_A * sigma_66Ga_mean2a * 1e-24 * dx;
-    Y_Zn68_Ga67a(i) = Zn68_ab *pps * rho_Zn_A * sigma_67Ga_mean2a * 1e-24 * dx;
+    Y_I127_Xe127a(i) = pps * rho_I_A * sigma_127Xe_meana * 1e-24 * dx;
+    Y_I127_Xe125a(i) = pps * rho_I_A * sigma_125Xe_meana * 1e-24 * dx;
+    Y_I127_Xe123a(i) = pps * rho_I_A * sigma_123Xe_meana * 1e-24 * dx;
+    Y_I127_Xe122a(i) = pps * rho_I_A * sigma_122Xe_meana * 1e-24 * dx;
     
     
             % PMMA (simplified only)
@@ -512,13 +468,10 @@ for i=1:(numel(x)-1)
     sigma_PG_N14_1p = 0.5 * (max(0,PG_N14_N14_1_F(E1p)) + max(0,PG_N14_N14_1_F(E2p)));
     sigma_PG_N14_2p = 0.5 * (max(0,PG_N14_N14_2_F(E1p)) + max(0,PG_N14_N14_2_F(E2p)));
     sigma_PG_O16_6p = 0.5 * (max(0,PG_O16_O16_6_F(E1p)) + max(0,PG_O16_O16_6_F(E2p)));
-    sigma_64Ga_meanp = 0.5 * (max(0,Zn64_Ga64_F(E1p)) +max(0,Zn64_Ga64_F(E2p)));
-    sigma_66Ga_meanp = 0.5 * (max(0,Zn66_Ga66_F(E1p)) + max(0,Zn66_Ga66_F(E2p)));
-    sigma_68Ga_meanp = 0.5 * (max(0,Zn68_Ga68_F(E1p)) + max(0,Zn68_Ga68_F(E2p)));
-    sigma_67Ga_meanp = 0.5 * (max(0,Zn67_Ga67_F(E1p)) + max(0,Zn67_Ga67_F(E2p)));
-    sigma_65Ga_meanp = 0.5 * (max(0,Zn66_Ga65_F(E1p)) +max(0,Zn66_Ga65_F(E2p)));
-    sigma_66Ga_mean2p = 0.5 * (max(0,Zn67_Ga66_F(E1p)) + max(0,Zn67_Ga66_F(E2p)));
-    sigma_67Ga_mean2p = 0.5 * (max(0,Zn68_Ga67_F(E1p)) + max(0,Zn68_Ga67_F(E2p)));
+    sigma_127Xe_meanp = 0.5 * (max(0,I127_Xe127_F(E1p)) +max(0,I127_Xe127_F(E2p)));
+    sigma_125Xe_meanp = 0.5 * (max(0,I127_Xe125_F(E1p)) + max(0,I127_Xe125_F(E2p)));
+    sigma_123Xe_meanp = 0.5 * (max(0,I127_Xe123_F(E1p)) + max(0,I127_Xe123_F(E2p)));
+    sigma_122Xe_meanp = 0.5 * (max(0,I127_Xe122_F(E1p)) + max(0,I127_Xe122_F(E2p)));
     Y_O16_C11p(i) = pps * rho_O16_Ap * sigma_C11_meanp * 1e-24 * dx;
     Y_O16_N13p(i) = pps * rho_O16_Ap * sigma_N13_meanp * 1e-24 * dx;
     Y_O16_O15p(i) = pps * rho_O16_Ap * sigma_O15_meanp * 1e-24 * dx;
@@ -532,16 +485,14 @@ for i=1:(numel(x)-1)
     Y_PG_N14_N14_1p(i) = pps * rho_N14_Ap * sigma_PG_N14_1p * 1e-24 * dx;
     Y_PG_N14_N14_2p(i) = pps * rho_N14_Ap * sigma_PG_N14_2p * 1e-24 * dx;
     Y_PG_O16_O16_6p(i) = pps * rho_O16_Ap * sigma_PG_O16_6p * 1e-24 * dx;
-    Y_Zn64_Ga64p(i) = Zn64_ab *pps * rho_Zn_A * sigma_64Ga_meanp * 1e-24 * dx;
-    Y_Zn66_Ga66p(i) = Zn66_ab *pps * rho_Zn_A * sigma_66Ga_meanp * 1e-24 * dx;
-    Y_Zn68_Ga68p(i) = Zn68_ab *pps * rho_Zn_A * sigma_68Ga_meanp * 1e-24 * dx;
-    Y_Zn67_Ga67p(i) = Zn67_ab *pps * rho_Zn_A * sigma_67Ga_meanp * 1e-24 * dx;
-    Y_Zn66_Ga65p(i) = Zn66_ab *pps * rho_Zn_A * sigma_65Ga_meanp * 1e-24 * dx;
-    Y_Zn67_Ga66p(i) = Zn67_ab *pps * rho_Zn_A * sigma_66Ga_mean2p * 1e-24 * dx;
-    Y_Zn68_Ga67p(i) = Zn68_ab *pps * rho_Zn_A * sigma_67Ga_mean2p * 1e-24 * dx;
+    Y_I127_Xe127p(i) = pps * rho_I_A * sigma_127Xe_meanp * 1e-24 * dx;
+    Y_I127_Xe125p(i) = pps * rho_I_A * sigma_125Xe_meanp * 1e-24 * dx;
+    Y_I127_Xe123p(i) = pps * rho_I_A * sigma_123Xe_meanp * 1e-24 * dx;
+    Y_I127_Xe122p(i) = pps * rho_I_A * sigma_122Xe_meanp * 1e-24 * dx;
     
     
 end
+
 
 %% Calculo de unidades Dosis
 
@@ -600,20 +551,19 @@ Da_p=Edep*1.6e-13/rho_PMMA;
 Np_p=1/Da_p;
 Con_p=Np_p*MeVJ;
 
-
-
 %% Create plots de emisores beta+
 
 % Figure in water
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,E)
 yyaxis right
 xlabel('Depth (cm)');
-title('Water + Zn');
+ylabel('Dose (a.u.)')
+title('Water');
 %hold on
 plot(x,Con_w*Ddep,'linewidth',2)
-ylabel('Dose (Gy/cm³)')
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 30 0 (max(Con_w*Ddep)+0.2*(max(Con_w*Ddep)))]);
@@ -622,28 +572,23 @@ yyaxis left
 title('Yields of Water');
 hold on
 ylabel('\beta^+ isotopes/Gy/mm');
-Y_64w = Y_Zn64_Ga64w;
-Y_65w = Y_Zn66_Ga65w;
-Y_66w = Y_Zn66_Ga66w+Y_Zn67_Ga66w;
-Y_67w = Y_Zn67_Ga67w+Y_Zn68_Ga67w;
-Y_68w = Y_Zn68_Ga68w;
-Y_tw = Y_64w+Y_65w+Y_68w+Y_67w+Y_66w+Y_O16_C11s+Y_O16_N13s+Y_O16_O15s;
+Y_wt= Y_O16_C11s+Y_O16_N13s+Y_O16_O15s+Y_I127_Xe127w+Y_I127_Xe125w+Y_I127_Xe123w+Y_I127_Xe122w;
 plot(x,Np_w/pps*Y_O16_C11s,'k'); hold on
 plot(x,Np_w/pps*Y_O16_N13s,'c')
 plot(x,Np_w/pps*Y_O16_O15s,'m')
-plot(x,Np_w/pps*Y_64w,'g-o')
-plot(x,Np_w/pps*Y_65w,'r-o')
-plot(x,Np_w/pps*Y_66w,'b-o')
-plot(x,Np_w/pps*Y_67w,'m-o')
-plot(x,Np_w/pps*Y_68w,'y-o')
-plot(x,Np_w/pps*Y_tw,'k','linewidth',2)
-legend('C11','N13','O15','Ga64','Ga66','Ga65','Ga67','Ga68','Total','Location', 'northwest');
+plot(x,Np_w/pps*Y_I127_Xe127w,'g-o')
+plot(x,Np_w/pps*Y_I127_Xe125w,'b-o')
+plot(x,Np_w/pps*Y_I127_Xe123w,'y-o')
+plot(x,Np_w/pps*Y_I127_Xe122w,'r-o')
+plot(x,Np_w/pps*Y_wt,'k','linewidth',2)
 set(gca,'FontSize',14)
+legend('C11','N13','O15','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
 [f,g]=min(Ddep);
-axis([ 0 g*dx+0.05*g*dx 0 (max(Np_w/pps*Y_tw)+0.2*max(Np_w/pps*Y_tw))]);
+grid on
+axis([g*dx-1 g*dx+0.00*g*dx 0 max(Np_w/pps*Y_wt)+0.2*max(Np_w/pps*Y_wt)]);
 
 % Figure in tisssue
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Et)
 yyaxis right
@@ -651,11 +596,11 @@ xlabel('Depth (cm)');
 ylabel(' Dose (a.u.)')
 title('Tissue');
 hold on
-plot(x,Con_w*Ddept,'linewidth',2)
-ylabel('Dose (Gy/cm³)')
+plot(x,Con_t*Ddept,'linewidth',2)
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_t*Ddept)+0.2*(max(Con_t*Ddept)))]);
+axis([0 17 0 (max(Con_t*Ddept)+0.2*(max(Con_t*Ddep)))]);
 %subplot(2,1,2)
 yyaxis left
 grid on
@@ -665,32 +610,25 @@ Y_C11t = Y_O16_C11t + Y_C12_C11t + Y_N14_C11t;
 Y_N13t = Y_O16_N13t + Y_N14_N13t;
 Y_O15t = Y_O16_O15t;
 Y_C10t = Y_C12_C10t;
-Y_64t = Y_Zn64_Ga64t;
-Y_65t = Y_Zn66_Ga65t;
-Y_66t = Y_Zn66_Ga66t+Y_Zn67_Ga66t;
-Y_67t = Y_Zn67_Ga67t+Y_Zn68_Ga67t;
-Y_68t = Y_Zn68_Ga68t;
-Y_tt = Y_64t+Y_65t+Y_68t+Y_67t+Y_66t+Y_C11t+Y_N13t+Y_O15t;
+Y_tt= Y_C11t+Y_N13t+Y_O15t+Y_C10t+Y_I127_Xe127t+Y_I127_Xe125t+Y_I127_Xe123t+Y_I127_Xe122t;
 plot(x,Np_t/pps*Y_C11t,'k'); hold on
 plot(x,Np_t/pps*Y_N13t,'c')
 plot(x,Np_t/pps*Y_O15t,'m')
 plot(x,Np_t/pps*Y_C10t,'y');
-plot(x,Np_t/pps*Y_64t,'g-o')
-plot(x,Np_t/pps*Y_65t,'r-o')
-plot(x,Np_t/pps*Y_66t,'b-o')
-plot(x,Np_t/pps*Y_67t,'m-o')
-plot(x,Np_t/pps*Y_68t,'y-o')
+plot(x,Np_t/pps*Y_I127_Xe127t,'g-o')
+plot(x,Np_t/pps*Y_I127_Xe125t,'b-o')
+plot(x,Np_t/pps*Y_I127_Xe123t,'r-o')
+plot(x,Np_t/pps*Y_I127_Xe122t,'m-o')
 plot(x,Np_t/pps*Y_tt,'k','linewidth',2)
-
-legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location', 'northwest');
+legend('C11','N13','O15','C10','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
 [f,g]=min(Ddept);
-axis([0 (ceil(g*dx)) 0 (max(Np_t/pps*Y_tt)+0.2*max(Np_t/pps*Y_tt))]);
+axis([g*dx-1 g*dx+0.00*g*dx 0 max(max(Np_t/pps*Y_tt)+0.2*max(Np_t/pps*Y_tt))]);
 xlabel('Depth (cm)');
 ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 % Figure in adipose
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Ea)
 yyaxis right
@@ -699,10 +637,10 @@ ylabel('Dose (a.u.)')
 title('Adipose');
 hold on
 plot(x,Con_a*Ddepa,'linewidth',2)
-ylabel('Dose (Gy/cm³)')
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_a*Ddepa)+0.2*(max(Con_a*Ddepa)))]);
+axis([0 20 0 (max(Con_a*Ddepa)+0.2*max(Con_a*Ddepa))]);
 %subplot(2,1,2)
 yyaxis left
 grid on
@@ -712,31 +650,25 @@ Y_C11a = Y_O16_C11a + Y_C12_C11a + Y_N14_C11a;
 Y_N13a = Y_O16_N13a + Y_N14_N13a;
 Y_O15a = Y_O16_O15a;
 Y_C10a = Y_C12_C10a;
-Y_64a = Y_Zn64_Ga64a;
-Y_65a = Y_Zn66_Ga65a;
-Y_66a = Y_Zn66_Ga66a+Y_Zn67_Ga66a;
-Y_67a = Y_Zn67_Ga67a+Y_Zn68_Ga67a;
-Y_68a = Y_Zn68_Ga68a;
-Y_ta = Y_64a+Y_65a+Y_68a+Y_67a+Y_66a+Y_C11a+Y_N13a+Y_O15a;
+Y_ta= Y_C11a+Y_N13a+Y_O15a+Y_C10a+Y_I127_Xe127a+Y_I127_Xe125a+Y_I127_Xe123a+Y_I127_Xe122a;
 plot(x,Np_a/pps*Y_C11a,'k'); hold on
 plot(x,Np_a/pps*Y_N13a,'c')
 plot(x,Np_a/pps*Y_O15a,'m')
 plot(x,Np_a/pps*Y_C10a,'y');
-plot(x,Np_a/pps*Y_64a,'g-o')
-plot(x,Np_a/pps*Y_65a,'r-o')
-plot(x,Np_a/pps*Y_66a,'b-o')
-plot(x,Np_a/pps*Y_67a,'m-o')
-plot(x,Np_a/pps*Y_68a,'y-o')
+plot(x,Np_a/pps*Y_I127_Xe127a,'g-o')
+plot(x,Np_a/pps*Y_I127_Xe125a,'b-o')
+plot(x,Np_a/pps*Y_I127_Xe123a,'y-o')
+plot(x,Np_a/pps*Y_I127_Xe122a,'r-o')
 plot(x,Np_a/pps*Y_ta,'k','linewidth',2)
-legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location', 'northwest');
+legend('C11','N13','O15','C10','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
 [f,g]=min(Ddepa);
-axis([0 (ceil(g*dx)) 0 (max(Np_a/pps*Y_C11a)+0.5*max(Np_a/pps*Y_C11a))]);
+axis([g*dx-1 g*dx+0.00*g*dx 0 max(max(Np_a/pps*Y_ta)+0.2*max(Np_a/pps*Y_ta))]);
 xlabel('Depth (cm)');
 ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 % Figure in bone
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Eb)
 yyaxis right
@@ -744,11 +676,11 @@ xlabel('Depth (cm)');
 ylabel('Dose (a.u.)')
 title('Bone');
 hold on
-plot(x,Con_b*Ddepb)
-ylabel('Dose (Gy/cm³)')
+plot(x,Con_b*Ddepb,'linewidth',2)
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_b*Ddepb)+0.2*(max(Con_b*Ddepb)))]);
+axis([0 11 0 (max(Con_b*Ddepb)+0.2*max(Con_b*Ddepb))]);
 %subplot(2,1,2)
 yyaxis left
 grid on
@@ -759,79 +691,137 @@ Y_N13b = Y_O16_N13b + Y_N14_N13b;
 Y_O15b = Y_O16_O15b;
 Y_C10b = Y_C12_C10b;
 Y_Sc44b = Y_Ca44_Sc44;
-Y_64b = Y_Zn64_Ga64b;
-Y_65b = Y_Zn66_Ga65b;
-Y_66b = Y_Zn66_Ga66b+Y_Zn67_Ga66b;
-Y_67b = Y_Zn67_Ga67b+Y_Zn68_Ga67b;
-Y_68b = Y_Zn68_Ga68b;
+Y_tb= Y_C11b+Y_N13b+Y_O15b+Y_C10b+Y_I127_Xe127b+Y_I127_Xe125b+Y_I127_Xe123b+Y_I127_Xe122b;
 plot(x,Np_b/pps*Y_C11b,'k'); hold on
 plot(x,Np_b/pps*Y_N13b,'c')
 plot(x,Np_b/pps*Y_O15b,'m')
 plot(x,Np_b/pps*Y_C10b,'y');
 plot(x,Np_b/pps*Y_Sc44b,'g');
-plot(x,Np_b/pps*Y_64b,'go')
-plot(x,Np_b/pps*Y_65b,'ko')
-plot(x,Np_b/pps*Y_66b,'bo')
-plot(x,Np_b/pps*Y_67b,'mo')
-plot(x,Np_b/pps*Y_68b,'yo')
-legend('C11','N13','O15','C10','Sc44','Zn64','Zn66','Zn65','Zn67','Zn68','Location', 'northwest');
+plot(x,Np_b/pps*Y_I127_Xe127b,'g-o')
+plot(x,Np_b/pps*Y_I127_Xe125b,'b-o')
+plot(x,Np_b/pps*Y_I127_Xe123b,'y-o')
+plot(x,Np_b/pps*Y_I127_Xe122b,'r-o')
+plot(x,Np_b/pps*Y_tb,'k','linewidth',2)
+legend('C11','N13','O15','C10','Sc44','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
 [f,g]=min(Ddepb);
-axis([0 (ceil(g*dx)) 0 (max(Np_b/pps*Y_O15b)+0.5*max(Np_b/pps*Y_O15b))]);
+axis([g*dx-1 g*dx+0.00*g*dx 0 max(max(Np_b/pps*Y_tb)+0.2*max(Np_b/pps*Y_tb))]);
 xlabel('Depth (cm)');
 ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
-% Figure in PMMA
+% % Figure in PMMA
+% figure
+% %subplot(2,1,1)
+% %plot(x,Eb)
+% yyaxis right
+% xlabel('Depth (cm)');
+% ylabel('Dose (a.u.)')
+% title('PMMA');
+% hold on
+% plot(x,100*Ddepp)
+% legend('Dose')
+% set(gca,'FontSize',14)
+% axis([0 15 0 (max(100*Ddepp)+50)]);
+% %subplot(2,1,2)
+% yyaxis left
+% grid on
+% %title('Yields of different species (per incoming proton)');
+% hold on
+% Y_C11p = Y_O16_C11p + Y_C12_C11p + Y_N14_C11p;
+% Y_N13p = Y_O16_N13p + Y_N14_N13p;
+% Y_O15p = Y_O16_O15p;
+% Y_C10p = Y_C12_C10p;
+% hold on
+% plot(x,Y_C11p,'b');
+% plot(x,Y_O15p,'m'); 
+% plot(x,Y_N13p,'c');
+% plot(x,Y_C10p,'y');
+% plot(x,Y_I127_Xe127p,'g')
+% plot(x,Y_I127_Xe125p,'b')
+% plot(x,Y_I127_Xe123p,'y')
+% plot(x,Y_I127_Xe122p,'r:')
+% plot(x,Y_C11p+Y_O15p+Y_N13p+Y_C10p,'k:');
+% %plot(x,Y_N13p,'c')
+% %plot(x,Y_O15p,'m')
+% %plot(x,Y_C10p,'y');
+% legend('C11','O15','N13','C10','Xe127','Xe125','Xe123','Xe122','Total','Location', 'northwest');
+% %legend('Total','Location', 'northwest');
+% [f,g]=min(Ddepp);
+% axis([0 (ceil(g*dx)) 0 (max(Y_C11p)+0.5*max(Y_C11p))]);
+% xlabel('Depth (cm)');
+% ylabel('\beta^+ isotopes/proton/mm');
+% set(gca,'FontSize',14)
+% 
+% % Figure in PMMA
+% figure
+% %subplot(2,1,1)
+% %plot(x,Eb)
+% yyaxis right
+% xlabel('Depth (cm)');
+% ylabel('Dose (a.u.)')
+% title('PMMA');
+% hold on
+% plot(x,100*Ddepp)
+% legend('Dose')
+% set(gca,'FontSize',14)
+% axis([0 15 0 (max(100*Ddepp)+50)]);
+% %subplot(2,1,2)
+% yyaxis left
+% grid on
+% %title('Yields of different species (per incoming proton)');
+% hold on
+% Y_C11p_norm = Y_C11p./(max(Y_C11p));
+% Y_CO_norm = (Y_C11p+Y_O15p);
+% %plot(x,(Y_C11p_norm),'b'); hold on
+% plot(x,Y_CO_norm,'k');
+% %plot(x,Y_N13p,'c')
+% %plot(x,Y_O15p,'m')
+% %plot(x,Y_C10p,'y');
+% legend('C11+O15','Location', 'northeast');
+% [f,g]=min(Ddepp);
+% axis([0 (ceil(g*dx)) 0 max(Y_CO_norm)+0.2*max(Y_CO_norm)]);
+% xlabel('Depth (cm)');
+% ylabel('\beta^+ isotopes/10^6proton/mm');
+% set(gca,'FontSize',14)
+% Y_tot_p=Y_C11p+Y_N13p+Y_O15p+Y_C10p;
+
+%% Figuras del Yield production de los PG
+
+%PG Agua
 figure
 %subplot(2,1,1)
 %plot(x,Eb)
 yyaxis right
 xlabel('Depth (cm)');
 ylabel('Dose (a.u.)')
-title('PMMA');
+title('WATER');
 hold on
-plot(x,Con_p*Ddepp)
-ylabel('Dose (Gy/cm³)')
+plot(x,100*Ddep)
 legend('Dose')
 set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_p*Ddepp)+0.2*(max(Con_p*Ddepp)))]);
+axis([0 15 0 (max(100*Ddep)+50)]);
 %subplot(2,1,2)
 yyaxis left
 grid on
 %title('Yields of different species (per incoming proton)');
 hold on
-Y_C11p = Y_O16_C11p + Y_C12_C11p + Y_N14_C11p;
-Y_N13p = Y_O16_N13p + Y_N14_N13p;
-Y_O15p = Y_O16_O15p;
-Y_C10p = Y_C12_C10p;
-Y_64p = Y_Zn64_Ga64p;
-Y_65p = Y_Zn66_Ga65p;
-Y_66p = Y_Zn66_Ga66p+Y_Zn67_Ga66p;
-Y_67p = Y_Zn67_Ga67p+Y_Zn68_Ga67p;
-Y_68p = Y_Zn68_Ga68p;
-hold on
-plot(x,Np_p/pps*Y_C11p,'b');
-plot(x,Np_p/pps*Y_O15p,'m'); 
-plot(x,Np_p/pps*Y_N13p,'c');
-plot(x,Np_p/pps*Y_C10p,'y');
-plot(x,Np_p/pps*Y_64p,'go')
-plot(x,Np_p/pps*Y_65p,'ko')
-plot(x,Np_p/pps*Y_66p,'bo')
-plot(x,Np_p/pps*Y_67p,'mo')
-plot(x,Np_p/pps*Y_68p,'yo')
-legend('C11','N13','O15','C10','Zn64','Zn66','Zn65','Zn67','Zn68','Location', 'northwest');
+Y_4 = Y_PG_O16_C12_4w;
+Y_6 = Y_PG_O16_O16_6w;
+%plot(x,Y_4,'r'); hold on
+%plot(x,Y_6,'m');
+plot(x,Y_4+Y_6,'b');
 %plot(x,Y_N13p,'c')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
-legend('C11','O15','N13','C10','Zn64','Zn66','Zn68','Total','Location', 'northwest');
-%legend('Total','Location', 'northwest');
-[f,g]=min(Ddepp);
-axis([0 (ceil(g*dx)) 0 (max(Np_p/pps*Y_C11p+Np_p/pps*Y_O15p+Np_p/pps*Y_N13p+Np_p/pps*Y_C10p)+0.5*max(Np_p/pps*Y_C11p+Np_p/pps*Y_O15p+Np_p/pps*Y_N13p+Np_p/pps*Y_C10p))]);
+legend('Total','Location', 'northwest');
+[f,g]=min(Ddep);
+%axis([0 (ceil(g*dx)) 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
+axis([0 40 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/Gy/mm');
+ylabel('PG/proton/mm');
 set(gca,'FontSize',14)
 
-% Figure in PMMA
+%PG PMMA
 figure
 %subplot(2,1,1)
 %plot(x,Eb)
@@ -849,89 +839,19 @@ yyaxis left
 grid on
 %title('Yields of different species (per incoming proton)');
 hold on
-Y_C11p_norm = Y_C11p./(max(Y_C11p));
-Y_CO_norm = (Y_C11p+Y_O15p);
-%plot(x,(Y_C11p_norm),'b'); hold on
-plot(x,Y_CO_norm,'k');
-%plot(x,Y_N13p,'c')
-%plot(x,Y_O15p,'m')
-%plot(x,Y_C10p,'y');
-legend('C11+O15','Location', 'northeast');
-[f,g]=min(Ddepp);
-axis([0 (ceil(g*dx)) 0 (max(Y_Zn66_Ga66p)+0.5*max(Y_Zn66_Ga66p))]);
-xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/10^6proton/mm');
-set(gca,'FontSize',14)
-Y_tot_p=Y_C11p+Y_N13p+Y_O15p+Y_C10p;
-
-%% Figuras del Yield production de los PG
-
-%PG Agua
-figure
-%subplot(2,1,1)
-%plot(x,Eb)
-yyaxis right
-xlabel('Depth (cm)');
-ylabel('Dose (a.u.)')
-title('WATER');
-plot(x,Con_w*Ddep)
-ylabel('Dose (Gy/cm³)')
-legend('Dose')
-set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_w*Ddep)+0.2*(max(Con_w*Ddep)))]);
-%subplot(2,1,2)
-yyaxis left
-grid on
-%title('Yields of different species (per incoming proton)');
-hold on
-Y_4 = Y_PG_O16_C12_4w;
-Y_6 = Y_PG_O16_O16_6w;
-%plot(x,Y_4,'r'); hold on
-%plot(x,Y_6,'m');
-plot(x,Np_w/pps*Y_4+Np_w/pps*Y_6,'b');
-%plot(x,Y_N13p,'c')
-%plot(x,Y_O15p,'m')
-%plot(x,Y_C10p,'y');
-legend('Total','Location', 'northwest');
-[f,g]=min(Ddep);
-%axis([0 (ceil(g*dx)) 0 (max(Y_4+Y_6)+0.2*max(Y_4+Y_6))]);
-axis([0 40 0 (max(Np_w/pps*Y_4+Np_w/pps*Y_6)+0.2*max(Np_w/pps*Y_4+Np_w/pps*Y_6))]);
-xlabel('Depth (cm)');
-ylabel('PG/Gy/mm');
-set(gca,'FontSize',14)
-
-%PG PMMA
-figure
-%subplot(2,1,1)
-%plot(x,Eb)
-yyaxis right
-xlabel('Depth (cm)');
-ylabel('Dose (a.u.)')
-title('PMMA');
-hold on
-plot(x,Con_p*Ddepp)
-ylabel('Dose (Gy/cm³)')
-legend('Dose')
-set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_p*Ddepp)+0.2*(max(Con_p*Ddepp)))]);
-%subplot(2,1,2)
-yyaxis left
-grid on
-%title('Yields of different species (per incoming proton)');
-hold on
 Y_4p = Y_PG_C12_C12_4p+Y_PG_O16_C12_4p;
 Y_1p = Y_PG_N14_N14_1p;
 Y_6p = Y_PG_O16_O16_6p;
-plot(x,Np_p/pps*Y_4p,'b'); hold on
-plot(x,Np_p/pps*Y_6p,'m');
+plot(x,Y_4p,'b'); hold on
+plot(x,Y_6p,'m');
 %plot(x,Y_N13p,'c')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
 legend('4.44 MeV', '6.13 MeV','Location', 'northwest');
 [f,g]=min(Ddepp);
-axis([0 (ceil(g*dx)) 0 (max(Np_p/pps*Y_4p)+0.2*max(Np_p/pps*Y_4p))]);
+axis([0 (ceil(g*dx)) 0 (max(Y_4p)+0.2*max(Y_4p))]);
 xlabel('Depth (cm)');
-ylabel('PG/Gy/mm');
+ylabel('PG/proton/mm');
 set(gca,'FontSize',14)
 
 %PG Piel
@@ -943,11 +863,10 @@ xlabel('Depth (cm)');
 ylabel('Dose (a.u.)')
 title('Tissue');
 hold on
-plot(x,Con_t*Ddept)
-ylabel('Dose (Gy/cm³)')
+plot(x,100*Ddept)
 legend('Dose')
 set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_t*Ddept)+0.2*(max(Con_t*Ddept)))]);
+axis([0 15 0 (max(100*Ddept)+50)]);
 %subplot(2,1,2)
 yyaxis left
 grid on
@@ -957,19 +876,19 @@ Y_4t = Y_PG_C12_C12_4t+Y_PG_O16_C12_4t;
 Y_1t = Y_PG_N14_N14_1t;
 Y_2t = Y_PG_N14_N14_2t;
 Y_6t = Y_PG_O16_O16_6t;
-plot(x,Np_t/pps*Y_6t,'b'); hold on
-plot(x,Np_t/pps*Y_4t,'m');
-plot(x,Np_t/pps*Y_2t,'c');
-plot(x,Np_t/pps*Y_1t,'g');
+plot(x,Y_6t,'b'); hold on
+plot(x,Y_4t,'m');
+plot(x,Y_2t,'c');
+plot(x,Y_1t,'g');
 
 %plot(x,Y_N13p,'c')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
 legend( '6.13 MeV','4.44 MeV','2.31 MeV','1.63 MeV','Location', 'northwest');
 [f,g]=min(Ddept);
-axis([0 (ceil(g*dx)) 0 (max(Np_t/pps*Y_4t)+0.2*max(Np_t/pps*Y_4t))]);
+axis([0 (ceil(g*dx)) 0 (max(Y_4t)+0.2*max(Y_4t))]);
 xlabel('Depth (cm)');
-ylabel('PG/Gy/mm');
+ylabel('PG/proton/mm');
 set(gca,'FontSize',14)
 
 %PG Adipose
@@ -981,11 +900,10 @@ xlabel('Depth (cm)');
 ylabel('Dose (a.u.)')
 title('Adipose');
 hold on
-plot(x,Con_a*Ddepa)
-ylabel('Dose (Gy/cm³)')
+plot(x,100*Ddepa)
 legend('Dose')
 set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_a*Ddepa)+0.2*(max(Con_a*Ddepa)))]);
+axis([0 15 0 (max(100*Ddepa)+50)]);
 %subplot(2,1,2)
 yyaxis left
 grid on
@@ -995,19 +913,19 @@ Y_4a = Y_PG_C12_C12_4a+Y_PG_O16_C12_4a;
 Y_1a = Y_PG_N14_N14_1a;
 Y_2a = Y_PG_N14_N14_2a;
 Y_6a = Y_PG_O16_O16_6a;
-plot(x,Np_a/pps*Y_6a,'b'); hold on
-plot(x,Np_a/pps*Y_4a,'m');
-plot(x,Np_a/pps*Y_2a,'c');
-plot(x,Np_a/pps*Y_1a,'g');
+plot(x,Y_6a,'b'); hold on
+plot(x,Y_4a,'m');
+plot(x,Y_2a,'c');
+plot(x,Y_1a,'g');
 
 %plot(x,Y_N13p,'c')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
 legend( '6.13 MeV','4.44 MeV','2.31 MeV','1.63 MeV','Location', 'northwest');
 [f,g]=min(Ddepa);
-axis([0 (ceil(g*dx)) 0 (max(Np_a/pps*Y_4a)+0.2*max(Np_a/pps*Y_4a))]);
+axis([0 (ceil(g*dx)) 0 (max(Y_4a)+0.2*max(Y_4a))]);
 xlabel('Depth (cm)');
-ylabel('PG/Gy/mm');
+ylabel('PG/proton/mm');
 set(gca,'FontSize',14)
 
 %PG Bone
@@ -1019,11 +937,10 @@ xlabel('Depth (cm)');
 ylabel('Dose (a.u.)')
 title('Bone');
 hold on
-plot(x,Con_b*Ddepb)
-ylabel('Dose (Gy/cm³)')
+plot(x,100*Ddepb)
 legend('Dose')
 set(gca,'FontSize',14)
-axis([0 30 0 (max(Con_b*Ddepb)+0.2*(max(Con_b*Ddepb)))]);
+axis([0 15 0 (max(100*Ddepb)+50)]);
 %subplot(2,1,2)
 yyaxis left
 grid on
@@ -1033,19 +950,19 @@ Y_4b = Y_PG_C12_C12_4b+Y_PG_O16_C12_4b;
 Y_1b = Y_PG_N14_N14_1b;
 Y_2b = Y_PG_N14_N14_2b;
 Y_6b = Y_PG_O16_O16_6b;
-plot(x,Np_b/pps*Y_6b,'b'); hold on
-plot(x,Np_b/pps*Y_4b,'m');
-plot(x,Np_b/pps*Y_2b,'c');
-plot(x,Np_b/pps*Y_1b,'g');
+plot(x,Y_6b,'b'); hold on
+plot(x,Y_4b,'m');
+plot(x,Y_2b,'c');
+plot(x,Y_1b,'g');
 
 %plot(x,Y_N13p,'c')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
 legend( '6.13 MeV','4.44 MeV','2.31 MeV','1.63 MeV','Location', 'northwest');
 [f,g]=min(Ddepb);
-axis([0 (ceil(g*dx)) 0 (max(Np_b/pps*Y_4b)+0.2*max(Np_b/pps*Y_4b))]);
+axis([0 (ceil(g*dx)) 0 (max(Y_4b)+0.2*max(Y_4b))]);
 xlabel('Depth (cm)');
-ylabel('PG/Gy/mm');
+ylabel('PG/proton/mm');
 set(gca,'FontSize',14)
 
 
@@ -1057,21 +974,19 @@ calcTimes = [0 60 1000 3600]; % s
 act_C11 = zeros(numel(calcTimes), numel(x));
 act_N13 = zeros(numel(calcTimes), numel(x));
 act_O15 = zeros(numel(calcTimes), numel(x));
-act_Ga64 = zeros(numel(calcTimes), numel(x));
-act_Ga65 = zeros(numel(calcTimes), numel(x));
-act_Ga66 = zeros(numel(calcTimes), numel(x));
-act_Ga67 = zeros(numel(calcTimes), numel(x));
-act_Ga68 = zeros(numel(calcTimes), numel(x));
+act_Xe127 = zeros(numel(calcTimes), numel(x));
+act_Xe125 = zeros(numel(calcTimes), numel(x));
+act_Xe123 = zeros(numel(calcTimes), numel(x));
+act_Xe122 = zeros(numel(calcTimes), numel(x));
 
 act_C11t = zeros(numel(calcTimes), numel(x));
 act_C10t = zeros(numel(calcTimes), numel(x));
 act_N13t = zeros(numel(calcTimes), numel(x));
 act_O15t= zeros(numel(calcTimes), numel(x));
-act_Ga64t = zeros(numel(calcTimes), numel(x));
-act_Ga65t = zeros(numel(calcTimes), numel(x));
-act_Ga66t = zeros(numel(calcTimes), numel(x));
-act_Ga67t = zeros(numel(calcTimes), numel(x));
-act_Ga68t = zeros(numel(calcTimes), numel(x));
+act_Xe127t = zeros(numel(calcTimes), numel(x));
+act_Xe125t = zeros(numel(calcTimes), numel(x));
+act_Xe123t = zeros(numel(calcTimes), numel(x));
+act_Xe122t = zeros(numel(calcTimes), numel(x));
 
 
 
@@ -1079,11 +994,10 @@ act_C11a = zeros(numel(calcTimes), numel(x));
 act_C10a = zeros(numel(calcTimes), numel(x));
 act_N13a = zeros(numel(calcTimes), numel(x));
 act_O15a= zeros(numel(calcTimes), numel(x));
-act_Ga64a = zeros(numel(calcTimes), numel(x));
-act_Ga65a = zeros(numel(calcTimes), numel(x));
-act_Ga66a = zeros(numel(calcTimes), numel(x));
-act_Ga67a = zeros(numel(calcTimes), numel(x));
-act_Ga68a = zeros(numel(calcTimes), numel(x));
+act_Xe127a = zeros(numel(calcTimes), numel(x));
+act_Xe125a = zeros(numel(calcTimes), numel(x));
+act_Xe123a = zeros(numel(calcTimes), numel(x));
+act_Xe122a = zeros(numel(calcTimes), numel(x));
 
 
 act_C11b = zeros(numel(calcTimes), numel(x));
@@ -1091,24 +1005,23 @@ act_C10b = zeros(numel(calcTimes), numel(x));
 act_N13b = zeros(numel(calcTimes), numel(x));
 act_O15b = zeros(numel(calcTimes), numel(x));
 act_Sc44b = zeros(numel(calcTimes), numel(x));
-act_Ga64b = zeros(numel(calcTimes), numel(x));
-act_Ga65b = zeros(numel(calcTimes), numel(x));
-act_Ga66b = zeros(numel(calcTimes), numel(x));
-act_Ga67b = zeros(numel(calcTimes), numel(x));
-act_Ga68b = zeros(numel(calcTimes), numel(x));
+act_Xe127b = zeros(numel(calcTimes), numel(x));
+act_Xe125b = zeros(numel(calcTimes), numel(x));
+act_Xe123b = zeros(numel(calcTimes), numel(x));
+act_Xe122b = zeros(numel(calcTimes), numel(x));
 
 
-act_C11p = zeros(numel(calcTimes), numel(x));
-act_C10p = zeros(numel(calcTimes), numel(x));
-act_N13p = zeros(numel(calcTimes), numel(x));
-act_O15p = zeros(numel(calcTimes), numel(x));
-act_Ga64p = zeros(numel(calcTimes), numel(x));
-act_Ga65p = zeros(numel(calcTimes), numel(x));
-act_Ga66p = zeros(numel(calcTimes), numel(x));
-act_Ga67p = zeros(numel(calcTimes), numel(x));
-act_Ga68p = zeros(numel(calcTimes), numel(x));
+% act_C11p = zeros(numel(calcTimes), numel(x));
+% act_C10p = zeros(numel(calcTimes), numel(x));
+% act_N13p = zeros(numel(calcTimes), numel(x));
+% act_O15p = zeros(numel(calcTimes), numel(x));
+% act_Xe127p = zeros(numel(calcTimes), numel(x));
+% act_Xe125p = zeros(numel(calcTimes), numel(x));
+% act_Xe123p = zeros(numel(calcTimes), numel(x));
+% act_Xe122p = zeros(numel(calcTimes), numel(x));
 
 
+deltat=1
 %Calculo Actividad
 %Como hemos introducido el p/s en el Yield roduction tenemos que calcular
 %la actividad del número de protones en el intervalo de tiempo que estamos simulando.
@@ -1117,33 +1030,30 @@ for i=1:numel(calcTimes)
     act_C11(i,:) = deltat * landa_C11 .* Y_O16_C11s .* exp(- landa_C11 * calcTimes(i));
     act_N13(i,:) = deltat * landa_N13 .* Y_O16_N13s .* exp(- landa_N13 * calcTimes(i));
     act_O15(i,:) = deltat * landa_O15 .* Y_O16_O15s .* exp(- landa_O15 * calcTimes(i));
-    act_Ga64(i,:) = deltat * landa_Ga64 .* Y_64w.* exp(- landa_Ga64 * calcTimes(i));
-    act_Ga65(i,:) = deltat * landa_Ga65 .* Y_65w.* exp(- landa_Ga65 * calcTimes(i));
-    act_Ga66(i,:) = deltat * landa_Ga66 .* Y_66w .* exp(- landa_Ga66 * calcTimes(i));
-    act_Ga67(i,:) = deltat * landa_Ga66 .* Y_67w .* exp(- landa_Ga67 * calcTimes(i));
-    act_Ga68(i,:) = deltat * landa_Ga68 .* Y_68w .* exp(- landa_Ga68 * calcTimes(i));
+    act_Xe127(i,:) = deltat * landa_Xe127 .* Y_I127_Xe127w .* exp(- landa_Xe127 * calcTimes(i));
+    act_Xe125(i,:) = deltat * landa_Xe125 .* Y_I127_Xe125w .* exp(- landa_Xe125 * calcTimes(i));
+    act_Xe123(i,:) = deltat * landa_Xe123 .* Y_I127_Xe123w .* exp(- landa_Xe123 * calcTimes(i));
+    act_Xe122(i,:) = deltat * landa_Xe122 .* Y_I127_Xe122w .* exp(- landa_Xe122 * calcTimes(i));
     
     % Tissue
     act_C11t(i,:) = deltat * landa_C11 .* Y_C11t .* exp(- landa_C11 * calcTimes(i));
     act_C10t(i,:) = deltat * landa_C10 .* Y_C10t .* exp(- landa_C10 * calcTimes(i));    
     act_N13t(i,:) = deltat * landa_N13 .* Y_N13t .* exp(- landa_N13 * calcTimes(i));
     act_O15t(i,:) = deltat * landa_O15 .* Y_O15t .* exp(- landa_O15 * calcTimes(i));  
-    act_Ga64t(i,:) = deltat * landa_Ga64 .* Y_64t.* exp(- landa_Ga64 * calcTimes(i));
-    act_Ga65t(i,:) = deltat * landa_Ga65 .* Y_65t.* exp(- landa_Ga65 * calcTimes(i));
-    act_Ga66t(i,:) = deltat * landa_Ga66 .* Y_66t .* exp(- landa_Ga66 * calcTimes(i));
-    act_Ga67t(i,:) = deltat * landa_Ga66 .* Y_67t .* exp(- landa_Ga67 * calcTimes(i));
-    act_Ga68t(i,:) = deltat * landa_Ga68 .* Y_68t .* exp(- landa_Ga68 * calcTimes(i));
+    act_Xe127t(i,:) = deltat * landa_Xe127 .* Y_I127_Xe127t .* exp(- landa_Xe127 * calcTimes(i));
+    act_Xe125t(i,:) = deltat * landa_Xe125 .* Y_I127_Xe125t .* exp(- landa_Xe125 * calcTimes(i));
+    act_Xe123t(i,:) = deltat * landa_Xe123 .* Y_I127_Xe123t .* exp(- landa_Xe123 * calcTimes(i));
+    act_Xe122t(i,:) = deltat * landa_Xe122 .* Y_I127_Xe122t .* exp(- landa_Xe122 * calcTimes(i));
     
      % Adipose
     act_C11a(i,:) = deltat * landa_C11 .* Y_C11a .* exp(- landa_C11 * calcTimes(i));
     act_C10a(i,:) = deltat * landa_C10 .* Y_C10a .* exp(- landa_C10 * calcTimes(i));    
     act_N13a(i,:) = deltat * landa_N13 .* Y_N13a .* exp(- landa_N13 * calcTimes(i));
     act_O15a(i,:) = deltat * landa_O15 .* Y_O15a .* exp(- landa_O15 * calcTimes(i)); 
-    act_Ga64a(i,:) = deltat * landa_Ga64 .* Y_64a.* exp(- landa_Ga64 * calcTimes(i));
-    act_Ga65a(i,:) = deltat * landa_Ga65 .* Y_65a.* exp(- landa_Ga65 * calcTimes(i));
-    act_Ga66a(i,:) = deltat * landa_Ga66 .* Y_66a .* exp(- landa_Ga66 * calcTimes(i));
-    act_Ga67a(i,:) = deltat * landa_Ga66 .* Y_67a .* exp(- landa_Ga67 * calcTimes(i));
-    act_Ga68a(i,:) = deltat * landa_Ga68 .* Y_68a .* exp(- landa_Ga68 * calcTimes(i));
+    act_Xe127a(i,:) = deltat * landa_Xe127 .* Y_I127_Xe127a .* exp(- landa_Xe127 * calcTimes(i));
+    act_Xe125a(i,:) = deltat * landa_Xe125 .* Y_I127_Xe125a .* exp(- landa_Xe125 * calcTimes(i));
+    act_Xe123a(i,:) = deltat * landa_Xe123 .* Y_I127_Xe123a .* exp(- landa_Xe123 * calcTimes(i));
+    act_Xe122a(i,:) = deltat * landa_Xe122 .* Y_I127_Xe122a .* exp(- landa_Xe122 * calcTimes(i));
     
      % Bone
     act_C11b(i,:) = deltat * landa_C11 .* Y_C11b .* exp(- landa_C11 * calcTimes(i));
@@ -1151,34 +1061,31 @@ for i=1:numel(calcTimes)
     act_N13b(i,:) = deltat * landa_N13 .* Y_N13b .* exp(- landa_N13 * calcTimes(i));
     act_O15b(i,:) = deltat * landa_O15 .* Y_O15b .* exp(- landa_O15 * calcTimes(i)); 
     act_Sc44b(i,:) = deltat * landa_Sc44 .* Y_Sc44b .* exp(- landa_Sc44 * calcTimes(i));
-    act_Ga64b(i,:) = deltat * landa_Ga64 .* Y_64b .* exp(- landa_Ga64 * calcTimes(i));
-    act_Ga65b(i,:) = deltat * landa_Ga65 .* Y_65b .* exp(- landa_Ga65 * calcTimes(i));
-    act_Ga66b(i,:) = deltat * landa_Ga66 .* Y_66b .* exp(- landa_Ga66 * calcTimes(i));
-    act_Ga67b(i,:) = deltat * landa_Ga66 .* Y_67b .* exp(- landa_Ga67 * calcTimes(i));
-    act_Ga68b(i,:) = deltat * landa_Ga68 .* Y_68b .* exp(- landa_Ga68 * calcTimes(i));
+    act_Xe127b(i,:) = deltat * landa_Xe127 .* Y_I127_Xe127b .* exp(- landa_Xe127 * calcTimes(i));
+    act_Xe125b(i,:) = deltat * landa_Xe125 .* Y_I127_Xe125b .* exp(- landa_Xe125 * calcTimes(i));
+    act_Xe123b(i,:) = deltat * landa_Xe123 .* Y_I127_Xe123b .* exp(- landa_Xe123 * calcTimes(i));
+    act_Xe122b(i,:) = deltat * landa_Xe122 .* Y_I127_Xe122b .* exp(- landa_Xe122 * calcTimes(i));
     
      % PMMA
-    act_C11p(i,:) = deltat * landa_C11 .* Y_C11p .* exp(- landa_C11 * calcTimes(i));
-    act_C10p(i,:) = deltat * landa_C10 .* Y_C10p .* exp(- landa_C10 * calcTimes(i));    
-    act_N13p(i,:) = deltat * landa_N13 .* Y_N13p .* exp(- landa_N13 * calcTimes(i));
-    act_O15p(i,:) = deltat * landa_O15 .* Y_O15p .* exp(- landa_O15 * calcTimes(i)); 
-    act_Ga64p(i,:) = deltat * landa_Ga64 .* Y_64p .* exp(- landa_Ga64 * calcTimes(i));
-    act_Ga65p(i,:) = deltat * landa_Ga65 .* Y_65p .* exp(- landa_Ga65 * calcTimes(i));
-    act_Ga66p(i,:) = deltat * landa_Ga66 .* Y_66p .* exp(- landa_Ga66 * calcTimes(i));
-    act_Ga67p(i,:) = deltat * landa_Ga66 .* Y_67p .* exp(- landa_Ga67 * calcTimes(i));
-    act_Ga68p(i,:) = deltat * landa_Ga68 .* Y_68p .* exp(- landa_Ga68 * calcTimes(i));
+%     act_C11p(i,:) = deltat * landa_C11 .* Y_C11p .* exp(- landa_C11 * calcTimes(i));
+%     act_C10p(i,:) = deltat * landa_C10 .* Y_C10p .* exp(- landa_C10 * calcTimes(i));    
+%     act_N13p(i,:) = deltat * landa_N13 .* Y_N13p .* exp(- landa_N13 * calcTimes(i));
+%     act_O15p(i,:) = deltat * landa_O15 .* Y_O15p .* exp(- landa_O15 * calcTimes(i)); 
+%     act_Xe127p(i,:) = deltat * landa_Xe127 .* Y_I127_Xe127p .* exp(- landa_Xe127 * calcTimes(i));
+%     act_Xe125p(i,:) = deltat * landa_Xe125 .* Y_I127_Xe125p .* exp(- landa_Xe125 * calcTimes(i));
+%     act_Xe123p(i,:) = deltat * landa_Xe123 .* Y_I127_Xe123p .* exp(- landa_Xe123 * calcTimes(i));
+%     act_Xe122p(i,:) = deltat * landa_Xe122 .* Y_I127_Xe122p .* exp(- landa_Xe122 * calcTimes(i));
     
     
 end
-act_total = (act_C11 + act_N13 + act_O15+act_Ga68+act_Ga67+act_Ga66+act_Ga65+act_Ga64);
-act_totalt = (act_C11t + act_C10t + act_N13t + act_O15t+act_Ga68t+act_Ga67t+act_Ga66t+act_Ga65t+act_Ga64a);
-act_totala = (act_C11a + act_C10a + act_N13a + act_O15a+act_Ga68a+act_Ga67a+act_Ga66a+act_Ga65a+act_Ga64a);
-act_totalb = (act_C11b + act_C10b + act_N13b + act_O15b+act_Ga68b+act_Ga67b+act_Ga66b+act_Ga65b+act_Ga64b);
-act_totalp = (act_C11p + act_C10p + act_N13p + act_O15p+act_Ga68p+act_Ga67p+act_Ga66p+act_Ga65p+act_Ga64p);
+act_total = (act_C11 + act_N13 + act_O15+act_Xe127+act_Xe125+act_Xe123+act_Xe122);
+act_totalt = (act_C11t + act_C10t + act_N13t + act_O15t+act_Xe127t+act_Xe125t+act_Xe123t+act_Xe122t);
+act_totala = (act_C11a + act_C10a + act_N13a + act_O15a+act_Xe127a+act_Xe125a+act_Xe123a+act_Xe122a);
+act_totalb = (act_C11b + act_C10b + act_N13b + act_O15b+act_Sc44b+act_Xe127b+act_Xe125b+act_Xe123b+act_Xe122b);
+act_totalp = (act_C11p + act_C10p + act_N13p + act_O15p+act_Xe127p+act_Xe125p+act_Xe123p+act_Xe122p);
 
 
-%% Representación gráfica de los 4 tiempos calculados
-E=figure;
+%Representación gráfica de los 4 tiempos calculados
 F=figure;
 G=figure;
 H=figure;
@@ -1186,156 +1093,135 @@ I=figure;
 AAA=length(calcTimes);
 
 for i=1:numel(calcTimes)
-    
-    figure(E)
-    subplot(2,2,i)
-    yyaxis left
-    plot(x, Np_t/pps*act_total(i,:),'b')
-    hold on
-    plot(x, Np_t/pps*act_C11(i,:),'r')
-    plot(x, Np_t/pps*act_N13(i,:),'y')
-    plot(x, Np_t/pps*act_O15(i,:),'c')
-    plot(x, Np_t/pps*act_Ga64(i,:),'ro')
-    plot(x, Np_t/pps*act_Ga65(i,:),'go')
-    plot(x, Np_t/pps*act_Ga66(i,:),'ko')
-    plot(x, Np_t/pps*act_Ga67(i,:),'mo')
-    plot(x, Np_t/pps*act_Ga68(i,:),'bo')
-    title(sprintf('Activity at t=%i s ',calcTimes(i)));
-    xlabel('Depth (cm)')
-    ylabel('Beta+/Gy/mm/s ');
-    legend('Total','C11','N13','O15','Ga64','Ga65','Ga66','Ga67','Ga68', 'Location', 'northwest');
-    set(gca, 'FontSize', 16)   
-  
-    
-    yyaxis right
-    grid on
-    plot(x,Con_w*Ddep)
-    ylabel('Dose (Gy/cm³)')
-    set(gca,'FontSize',14)
-    [f,g]=min(Ddep);
-    axis([0 (ceil(g*dx)) 0 (max(Con_w*Ddep)+0.2*max(Con_w*Ddep))]);
-    
-    
-    
     figure(F)
     subplot(2,2,i)
     yyaxis left
-    plot(x, Np_t/pps*act_totalt(i,:),'b')
+    plot(x, act_totalt(i,:),'b')
     hold on
-    plot(x, Np_t/pps*act_C11t(i,:),'r')
-    plot(x, Np_t/pps*act_N13t(i,:),'y')
-    plot(x, Np_t/pps*act_O15t(i,:),'c')
-    plot(x, Np_t/pps*act_C10t(i,:),'g')
-    plot(x, Np_t/pps*act_Ga64t(i,:),'ro')
-    plot(x, Np_t/pps*act_Ga65t(i,:),'go')
-    plot(x, Np_t/pps*act_Ga66t(i,:),'ko')
-    plot(x, Np_t/pps*act_Ga67t(i,:),'mo')
-    plot(x, Np_t/pps*act_Ga68t(i,:),'bo')
+    plot(x, act_C11t(i,:),'r')
+    plot(x, act_N13t(i,:),'y')
+    plot(x, act_O15t(i,:),'c')
+    plot(x, act_C10t(i,:),'g')
+    plot(x, act_Xe127t(i,:),'ro')
+    plot(x, act_Xe125t(i,:),'ko')
+    plot(x, act_Xe123t(i,:),'bo')
+    plot(x, act_Xe122t(i,:),'mo')
     title(sprintf('Activity at t=%i s ',calcTimes(i)));
     xlabel('Depth (cm)')
-    ylabel('Beta+/Gy/mm/s ');
-    legend('Total','C11','N13','O15','C10','Ga64','Ga65','Ga66','Ga67','Ga68', 'Location', 'northwest');
+    ylabel('Beta+/proton/mm/s ');
+    legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
     set(gca, 'FontSize', 16)   
   
     
     yyaxis right
     grid on
-    plot(x,Con_t*Ddept)
-    ylabel('Dose (Gy/cm³)')
-    set(gca,'FontSize',14)
+    plot(x,100*Ddept);
+    ylabel('-dE/dx')
     [f,g]=min(Ddept);
-    axis([0 (ceil(g*dx)) 0 (max(Con_t*Ddept)+0.2*max(Con_t*Ddept))]);
-    
+    axis([0 (ceil(g*dx)) 0 max(100*Ddept)+0.2*max(100*Ddept)]);
     
     figure(G)
     subplot(2,2,i)
     yyaxis left
-    plot(x, Np_a/pps*act_totala(i,:),'b')
+    plot(x, act_totala(i,:),'b')
     hold on
-    plot(x, Np_a/pps*act_C11a(i,:),'r')
-    plot(x, Np_a/pps*act_N13a(i,:),'y')
-    plot(x, Np_a/pps*act_O15a(i,:),'c')
-    plot(x, Np_a/pps*act_C10a(i,:),'g')
-
-    plot(x, Np_a/pps*act_Ga64a(i,:),'ro')
-    plot(x, Np_a/pps*act_Ga65a(i,:),'go')
-    plot(x, Np_a/pps*act_Ga66a(i,:),'ko')
-    plot(x, Np_a/pps*act_Ga67a(i,:),'mo')
-    plot(x, Np_a/pps*act_Ga68a(i,:),'bo')
-    title(sprintf('Activity at t=%i s ',calcTimes(i)));
+    plot(x, act_C11a(i,:),'r')
+    plot(x, act_N13a(i,:),'y')
+    plot(x, act_O15a(i,:),'c')
+    plot(x, act_C10a(i,:),'g')
+    title(sprintf('Activity at t=%i s',calcTimes(i)));
     xlabel('Depth (cm)')
-    ylabel('Beta+/Gy/mm/s ');
-    legend('Total','C11','N13','O15','C10','Ga64','Ga65','Ga66','Ga67','Ga68', 'Location', 'northwest');
+    ylabel('Beta+/proton/mm/s ');
+    legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
     set(gca, 'FontSize', 16)   
-    axis([0 5 0 max(Np_a/pps*act_totala(i,:))+0.2*max(Np_a/pps*act_totala(i,:))]);   
-    
+    axis([0 5 0 max(act_totala(i,:))+0.2*max(act_totala(i,:))]);   
     yyaxis right
     grid on
-    plot(x,Con_a*Ddepa)
-    ylabel('Dose (Gy/cm³)')
-    set(gca,'FontSize',14)
+    plot(x,100*Ddepa);
+    ylabel('-dE/dx')
     [f,g]=min(Ddepa);
-    axis([0 (ceil(g*dx)) 0 (max(Con_a*Ddepa)+0.2*max(Con_a*Ddepa))]);
+    axis([0 (ceil(g*dx)) 0 max(100*Ddepa)+0.2*max(100*Ddepa)]);
     
     figure(H)
     subplot(2,2,i)
     yyaxis left
-    plot(x, Np_b/pps*act_totalb(i,:),'b')
+    plot(x, act_totalb(i,:),'b')
     hold on
-    plot(x, Np_b/pps*act_C11b(i,:),'r')
-    plot(x, Np_b/pps*act_N13b(i,:),'y')
-    plot(x, Np_b/pps*act_O15b(i,:),'c')
-    plot(x, Np_b/pps*act_C10b(i,:),'g')
-    plot(x, Np_b/pps*act_Ga64b(i,:),'ro')
-    plot(x, Np_b/pps*act_Ga65b(i,:),'go')
-    plot(x, Np_b/pps*act_Ga66b(i,:),'ko')
-    plot(x, Np_b/pps*act_Ga67b(i,:),'mo')
-    plot(x, Np_b/pps*act_Ga68b(i,:),'bo')
+    plot(x, act_C11b(i,:),'r')
+    plot(x, act_N13b(i,:),'y')
+    plot(x, act_O15b(i,:),'c')
+    plot(x, act_C10b(i,:),'g')
     title(sprintf('Activity at t=%i s ',calcTimes(i)));
     xlabel('Depth (cm)')
-    ylabel('Beta+/Gy/mm/s ');
-    legend('Total','C11','N13','O15','C10','Ga64','Ga65','Ga66','Ga67','Ga68', 'Location', 'northwest');
+    ylabel('Beta+/proton/mm/s ');
+    legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
     set(gca, 'FontSize', 16) 
-    axis([0 11 0 max(Np_b/pps*act_totalb(i,:))+0.2*max(Np_b/pps*act_totalb(i,:))]);     
-    
+    axis([0 11 0 max(act_totalb(i,:))+0.2*max(act_totalb(i,:))]);     
     yyaxis right
     grid on
-    plot(x,Con_b*Ddepb)
-    ylabel('Dose (Gy/cm³)')
-    set(gca,'FontSize',14)
+    plot(x,100*Ddepb);
+    ylabel('-dE/dx')
     [f,g]=min(Ddepb);
-    axis([0 (ceil(g*dx)) 0 (max(Con_b*Ddepb)+0.2*max(Con_b*Ddepb))]);
+    axis([0 (ceil(g*dx)) 0 max(100*Ddepb)+0.2*max(100*Ddepb)]);
     
     figure(I);
     subplot(2,2,i)
     yyaxis left
-    plot(x, Np_p/pps*act_totalp(i,:),'b')
+    plot(x, act_totalp(i,:),'b')
     hold on
-    plot(x, Np_p/pps*act_C11p(i,:),'r')
-    plot(x, Np_p/pps*act_N13p(i,:),'y')
-    plot(x, Np_p/pps*act_O15p(i,:),'c')
-    plot(x, Np_p/pps*act_C10p(i,:),'g')
-    plot(x, Np_p/pps*act_Ga64p(i,:),'ro')
-    plot(x, Np_p/pps*act_Ga65p(i,:),'go')
-    plot(x, Np_p/pps*act_Ga66p(i,:),'ko')
-    plot(x, Np_p/pps*act_Ga67p(i,:),'mo')
-    plot(x, Np_p/pps*act_Ga68p(i,:),'bo')
+    plot(x, act_C11p(i,:),'r')
+    plot(x, act_N13p(i,:),'y')
+    plot(x, act_O15p(i,:),'c')
+    plot(x, act_C10p(i,:),'g')
     title(sprintf('Activity at t=%i s ',calcTimes(i)));
     xlabel('Depth (cm)')
-    ylabel('Beta+/Gy/mm/s ');
-    legend('Total','C11','N13','O15','C10','Ga64','Ga65','Ga66','Ga67','Ga68', 'Location', 'northwest');
+    ylabel('Beta+/proton/mm/s ');
+    legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
     set(gca, 'FontSize', 16)   
   
     
     yyaxis right
     grid on
-    plot(x,Con_p*Ddepp)
-    ylabel('Dose (Gy/cm³)')
-    set(gca,'FontSize',14)
+    plot(x,100*Ddepp);
+    ylabel('-dE/dx')
     [f,g]=min(Ddepp);
-    axis([0 (ceil(g*dx)) 0 (max(Con_t*Ddepp)+0.2*max(Con_t*Ddepp))]);
+    axis([0 (ceil(g*dx)) 0 max(100*Ddepp)+0.2*max(100*Ddepp)]);
 end
 
+
+
+%% Calculo a Dosis
+
+%Ddept=Ddept/rho_tissue;
+%Ddepa=Ddepa/rho_adipose;
+%Ddepb=Ddepb/rho_bone;
+%Ddepp=Ddepp/rho_PMMA;
+%Dosist=0;
+%Dosisa=0;
+%Dosisb=0;
+
+%for i=1:(numel(x)-1)
+    
+    %Dosist=Dosist+dx*(Ddept(i)+Ddept(i+1))/2; %MeV cm2/g
+    %Dosisa=Dosisa+dx*(Ddepa(i)+Ddepa(i+1))/2; %MeV cm2/g
+    %Dosisb=Dosisb+dx*(Ddepb(i)+Ddepb(i+1))/2; %MeV cm2/g
+    
+
+
+
+%end
+
+
+%Dosist=Dosist*1.6e-7; %Gy cm2
+%Dosisa=Dosisa*1.6e-7; %Gy cm2
+%Dosisb=Dosisb*1.6e-7; %Gy cm2
+
+%Dosist=max(Ddept)*1.6e-7; %Gy cm2
+%Dosisa=max(Ddepa)*1.6e-7; %Gy cm2
+%Dosisb=max(Ddepb)*1.6e-7; %Gy cm2
+%Numt=1/Dosist;
+%Numa=1/Dosisa;
+%Numb=1/Dosisb;
 
 
 %% Actividad con el tiempo

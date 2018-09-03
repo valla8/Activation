@@ -631,15 +631,15 @@ Con_p=Np_p*MeVJ;
 %% Create plots de emisores beta+
 
 % Figure in water
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,E)
 yyaxis right
 xlabel('Depth (cm)');
-ylabel('Dose (a.u.)')
 title('Water + Zn');
 %hold on
 plot(x,Con_w*Ddep,'linewidth',2)
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 30 0 (max(Con_w*Ddep)+0.2*max(Con_w*Ddep))]);
@@ -647,20 +647,20 @@ axis([0 30 0 (max(Con_w*Ddep)+0.2*max(Con_w*Ddep))]);
 yyaxis left
 title('Yields of Water ');
 hold on
-ylabel('\beta^+ isotopes/proton/mm');
+ylabel('\beta^+ isotopes/Gy/mm');
 Y_tw = Y_O16_C11+Y_O16_N13s+Y_O16_O15s+Y_O18_F18s;
-plot(x,Np_w/pps*Y_O16_C11s,'r'); hold on
+plot(x,Np_w/pps*Y_O16_C11s,'k'); hold on
 plot(x,Np_w/pps*Y_O16_N13s,'c')
 plot(x,Np_w/pps*Y_O16_O15s,'m')
 plot(x,Np_w/pps*Y_O18_F18s,'b-o');
 plot(x,Np_w/pps*Y_tw,'k','linewidth',2);
-legend('C11','N13','O15','F18','Location', 'northwest');
+legend('C11','N13','O15','F18','Location', 'bestoutside');
 set(gca,'FontSize',14)
 [f,g]=min(Ddep);
-axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Np_w/pps*Y_tw)+0.5*max(Np_w/pps*Y_tw))]);
+axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Np_w/pps*Y_tw)+0.2*max(Np_w/pps*Y_tw))]);
 
 % Figure in tisssue
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Et)
 yyaxis right
@@ -669,6 +669,7 @@ ylabel(' Dose (a.u.)')
 title('Tissue');
 hold on
 plot(x,100*Ddept,'linewidth',2)
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 17 0 (max(100*Ddept)+50)]);
@@ -683,21 +684,21 @@ Y_O15t = Y_O16_O15t;
 Y_C10t = Y_C12_C10t;
 Y_F18t = Y_O18_F18t;
 Y_tt = Y_C11t+Y_N13t+Y_O15t+Y_F18t+Y_C10t;
-plot(x,Y_C11t,'k'); hold on
-plot(x,Y_N13t,'c')
-plot(x,Y_O15t,'m')
-plot(x,Y_C10t,'y');
-plot(x,Y_F18t,'g-o');
-plot(x,Y_tt,'k','linewidth',2);
-legend('C11','N13','O15','C10','F18','Location', 'northwest');
+plot(x,Np_t/pps*Y_C11t,'k'); hold on
+plot(x,Np_t/pps*Y_N13t,'c')
+plot(x,Np_t/pps*Y_O15t,'m')
+plot(x,Np_t/pps*Y_C10t,'y');
+plot(x,Np_t/pps*Y_F18t,'b-o');
+plot(x,Np_t/pps*Y_tt,'k','linewidth',2);
+legend('C11','N13','O15','C10','F18','Location', 'bestoutside');
 [f,g]=min(Ddept);
-axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Y_tt)+0.5*max(Y_tt))]);
+axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Np_t/pps*Y_tt)+0.2*max(Np_t/pps*Y_tt))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/proton/mm');
+ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 % Figure in adipose
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Ea)
 yyaxis right
@@ -706,6 +707,7 @@ ylabel('Dose (a.u.)')
 title('Adipose');
 hold on
 plot(x,100*Ddepa,'linewidth',2)
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 20 0 (max(100*Ddepa)+50)]);
@@ -720,21 +722,21 @@ Y_O15a = Y_O16_O15a;
 Y_C10a = Y_C12_C10a;
 Y_F18a = Y_O18_F18a;
 Y_ta = Y_C11a+Y_N13a+Y_O15a+Y_F18a+Y_C10a;
-plot(x,Y_C11a,'r'); hold on
-plot(x,Y_N13a,'c')
-plot(x,Y_O15a,'m')
-plot(x,Y_C10a,'y');
-plot(x,Y_F18a,'b-o');
-plot(x,Y_ta,'k','linewidth',2);
-legend('C11','N13','O15','C10','F18','Total','Location', 'northwest');
+plot(x,Np_a/pps*Y_C11a,'k'); hold on
+plot(x,Np_a/pps*Y_N13a,'c')
+plot(x,Np_a/pps*Y_O15a,'m')
+plot(x,Np_a/pps*Y_C10a,'y');
+plot(x,Np_a/pps*Y_F18a,'b-o');
+plot(x,Np_a/pps*Y_ta,'k','linewidth',2);
+legend('C11','N13','O15','C10','F18','Total','Location', 'bestoutside');
 [f,g]=min(Ddepa);
-axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Y_ta)+0.5*max(Y_ta))]);
+axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Np_a/pps*Y_ta)+0.2*max(Np_a/pps*Y_ta))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/proton/mm');
+ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 % Figure in bone
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Eb)
 yyaxis right
@@ -743,6 +745,7 @@ ylabel('Dose (a.u.)')
 title('Bone');
 hold on
 plot(x,100*Ddepb,'linewidth',2)
+ylabel('Dose (Gy/cm^3)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 11 0 (max(100*Ddepb)+50)]);
@@ -758,18 +761,18 @@ Y_C10b = Y_C12_C10b;
 Y_Sc44b = Y_Ca44_Sc44;
 Y_F18b = Y_O18_F18b;
 Y_tb = Y_C11b+Y_N13b+Y_O15b+Y_F18b+Y_C10b;
-plot(x,Y_C11b,'r'); hold on
-plot(x,Y_N13b,'c')
-plot(x,Y_O15b,'m')
-plot(x,Y_C10b,'y');
-plot(x,Y_Sc44b,'g');
-plot(x,Y_F18b,'b-o');
-plot(x,Y_tb,'k','linewidth',2);
-legend('C11','N13','O15','C10','Sc44','F18','Total','Location', 'northwest');
+plot(x,Np_b/pps*Y_C11b,'k'); hold on
+plot(x,Np_b/pps*Y_N13b,'c')
+plot(x,Np_b/pps*Y_O15b,'m')
+plot(x,Np_b/pps*Y_C10b,'y');
+plot(x,Np_b/pps*Y_Sc44b,'g');
+plot(x,Np_b/pps*Y_F18b,'b-o');
+plot(x,Np_b/pps*Y_tb,'k','linewidth',2);
+legend('C11','N13','O15','C10','Sc44','F18','Total','Location', 'bestoutside');
 [f,g]=min(Ddepb);
-axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Y_tb)+0.5*max(Y_tb))]);
+axis([g*dx-1 g*dx+0.00*g*dx 0 (max(Np_b/pps*Y_tb)+0.2*max(Np_b/pps*Y_tb))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/proton/mm');
+ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 % % Figure in PMMA

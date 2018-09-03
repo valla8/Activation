@@ -10,14 +10,14 @@ clear all;close all;
 load('control1.mat');
 
 %PARAMETROS
-dx=0.1;      %Paso del intervalo (cm)
-xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=120;        %Energía inicial del haz
+dx=0.02;      %Paso del intervalo (cm)
+xref=5;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=58;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
-pps=1; %protones/segundo
+pps=1.6667e+06; %protones/segundo
 MeVJ=1.6e-13;
 %% Calcular (sin straggling)
 
@@ -615,18 +615,18 @@ hold on
 %plot(x,Np_p/pps*Y_O15p,'m'); 
 %plot(x,Np_p/pps*Y_N13p,'c');
 %plot(x,Np_p/pps*Y_C10p,'y');
-%plot(x,Np_p/pps*Y_C11p+Np_p/pps*Y_O15p+Np_p/pps*Y_N13p+Np_p/pps*Y_C10p,'k');
+plot(x,Np_p/pps*Y_C11p+Np_p/pps*Y_O15p+Np_p/pps*Y_N13p+Np_p/pps*Y_C10p,'k');
 %plot(x,Y_N13p,'c')
-plot(x,Np_p/pps*Y_C11p+Np_p/pps*Y_O15p,'k')
+%plot(x,Np_p/pps*Y_C11p+Np_p/pps*Y_O15p,'k')
 %plot(x,Y_O15p,'m')
 %plot(x,Y_C10p,'y');
 %legend('C11','O15','N13','C10','Total','Location', 'northwest');
-%legend('Total','Location', 'northwest');
-legend('C11 + O15','Location', 'northwest');
+legend('Total','Location', 'northwest');
+%legend('C11 + O15','Location', 'northwest');
 [f,g]=min(Ddepp);
-axis([0 (ceil(g*dx)) 0 (max(Np_p/pps*Y_C11p)+0.8*max(Np_p/pps*Y_C11p))]);
+axis([0 (ceil(g*dx)) 0 (max(Np_p/pps*Y_C11p)+1.2*max(Np_p/pps*Y_C11p))]);
 xlabel('Depth (cm)');
-ylabel('C11+O15 \beta^+ isotopes/Gy/mm');
+ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 
@@ -1169,18 +1169,18 @@ end
     axis([0 t*deltat 0 (max(temp_totalt2(:,1))+0.2*max(temp_totalt2(:,1)))]); 
     
     figure;
-    plot(T*deltat,(36*temp_totalp2(:,1)));
+    plot(T*deltat,(24*temp_totalp2(:,1)),'k','linewidth',2);
     hold on;
-    plot(T*deltat,36*temp_parcO15p(:,1));
-    plot(T*deltat,36*temp_parcC11p(:,1));
-    plot(T*deltat,36*temp_parcN13p(:,1));
-    plot(T*deltat,36*temp_parcC10p(:,1));
-    %title('Actividad total en a lo largo del tiempo PMMA');
+    plot(T*deltat,24*temp_parcO15p(:,1),'b','linewidth',2);
+    plot(T*deltat,24*temp_parcC11p(:,1),'r','linewidth',2);
+    plot(T*deltat,24*temp_parcN13p(:,1),'g','linewidth',2);
+    plot(T*deltat,24*temp_parcC10p(:,1),'m','linewidth',2);
+    title('Actividad total en  PMMA');
     xlabel('Tiempo (s)');
     ylabel('Beta+ emitters / s ');
     legend('Actividad total','O15','C11','N13','C10','Location', 'northeast');
     set(gca, 'FontSize', 16) ;
-    axis([0 t*deltat 0 (max(36*temp_totalp2(:,1))+0.2*max(36*temp_totalp2(:,1)))]);
+    axis([0 t*deltat 0 (max(24*temp_totalp2(:,1))+0.2*max(24*temp_totalp2(:,1)))]);
     
     figure;
     plot(T*deltat,(temp_totala2(:,1)));

@@ -18,7 +18,7 @@ a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
 pps=1;         %protones/segundo
-Zn_fraction = 0.1;
+Zn_fraction = 0.15;
 MeVJ=1.6e-13;
 %% Composiciones
 
@@ -605,7 +605,7 @@ Con_p=Np_p*MeVJ;
 %% Create plots de emisores beta+
 
 % Figure in water
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,E)
 yyaxis right
@@ -637,18 +637,20 @@ plot(x,Np_w/pps*Y_66w,'b-o')
 plot(x,Np_w/pps*Y_67w,'m-o')
 plot(x,Np_w/pps*Y_68w,'y-o')
 plot(x,Np_w/pps*Y_tw,'k','linewidth',2)
-legend('C11','N13','O15','Ga64','Ga66','Ga65','Ga67','Ga68','Total','Location', 'northwest');
+grid on
+legend('C11','N13','O15','Ga64','Ga66','Ga65','Ga67','Ga68','Total','Location', 'northeastoutside');
 set(gca,'FontSize',14)
 [f,g]=min(Ddep);
 axis([ g*dx-1 g*dx+0.00*g*dx 0 (max(Np_w/pps*Y_tw)+0.2*max(Np_w/pps*Y_tw))]);
 
+
 % Figure in tisssue
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Et)
 yyaxis right
 xlabel('Depth (cm)');
-ylabel(' Dose (a.u.)')
+ylabel(' Dose (Gy/cm³)')
 title('Tissue');
 hold on
 plot(x,Con_t*Ddept,'linewidth',2)
@@ -682,7 +684,7 @@ plot(x,Np_t/pps*Y_67t,'m-o')
 plot(x,Np_t/pps*Y_68t,'y-o')
 plot(x,Np_t/pps*Y_tt,'k','linewidth',2)
 
-legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location', 'northwest');
+legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location','northeastoutside');
 [f,g]=min(Ddept);
 axis([-1+g*dx g*dx+0.00*g*dx 0 (max(Np_t/pps*Y_tt)+0.2*max(Np_t/pps*Y_tt))]);
 xlabel('Depth (cm)');
@@ -690,7 +692,7 @@ ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 % Figure in adipose
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Ea)
 yyaxis right
@@ -728,7 +730,7 @@ plot(x,Np_a/pps*Y_66a,'b-o')
 plot(x,Np_a/pps*Y_67a,'m-o')
 plot(x,Np_a/pps*Y_68a,'y-o')
 plot(x,Np_a/pps*Y_ta,'k','linewidth',2)
-legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location', 'northwest');
+legend('C11','N13','O15','C10','Ga64','Ga66','Ga65','Ga67','Ga68','Location','northeastoutside');
 [f,g]=min(Ddepa);
 axis([-1+g*dx g*dx+0.00*g*dx 0 (max(Np_a/pps*Y_ta)+0.2*max(Np_a/pps*Y_ta))]);
 xlabel('Depth (cm)');
@@ -736,7 +738,7 @@ ylabel('\beta^+ isotopes/Gy/mm');
 set(gca,'FontSize',14)
 
 % Figure in bone
-figure
+figure('rend','painters','pos',[10 10 800 421])
 %subplot(2,1,1)
 %plot(x,Eb)
 yyaxis right
@@ -776,7 +778,7 @@ plot(x,Np_b/pps*Y_66b,'b-o')
 plot(x,Np_b/pps*Y_67b,'m-o')
 plot(x,Np_b/pps*Y_68b,'y-o')
 plot(x,Np_b/pps*Y_tb,'k','linewidth',2)
-legend('C11','N13','O15','C10','Sc44','Ga64','Ga66','Ga65','Ga67','Ga68','Location', 'northwest');
+legend('C11','N13','O15','C10','Sc44','Ga64','Ga66','Ga65','Ga67','Ga68','Location','northeastoutside');
 [f,g]=min(Ddepb);
 axis([-1+g*dx g*dx+0.00*g*dx 0 (max(Np_b/pps*Y_tb)+0.2*max(Np_b/pps*Y_tb))]);
 xlabel('Depth (cm)');
