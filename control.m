@@ -10,7 +10,7 @@ E0 = 58; % Energ?a inicial del haz (MeV)
 
 %% Cargar datos
 % Secciones de EXFOR.
-load('CrossSections.mat');
+load('CrossSections2.mat');
 %C12_C10_CS=C12_C10_CS./1000;
 %C12_C11_CS=C12_C11_CS./1000;
 %PG_C12_C12_4_CS=PG_C12_C12_4_CS./1000;
@@ -35,6 +35,9 @@ I127_Xe127_CS=I127_Xe127_CS./1000;
 I127_Xe125_CS=I127_Xe125_CS./1000;
 I127_Xe123_CS=I127_Xe123_CS./1000;
 I127_Xe122_CS=I127_Xe122_CS./1000;
+I127_Xem_CS=I127_Xem_CS./1000;
+
+Na23_Mg23_CS=Na23_Mg23_CS./1000;
 
 O18_F18_CS=O18_F18_CS/1000;
 
@@ -54,6 +57,8 @@ landa_Xe127 = log(2) / T_Xe127;
 landa_Xe125 = log(2) / T_Xe125;
 landa_Xe123 = log(2) / T_Xe123;
 landa_Xe122 = log(2) / T_Xe122;
+landa_Xe127m = log(2) / T_Xe127m;
+landa_Mg23= log(2) / T_Mg23
 
 % Natural abundances
 O16_ab = 0.99729; %1
@@ -62,6 +67,7 @@ C12_ab = 0.989; %3
 Zn64_ab = 0.492; %4
 Zn66_ab = 0.277; %5
 Zn68_ab = 0.185; %6
+Zn67_ab = 0.04;
 Ca44_ab = 0.0223233841; %
 I127_ab = 1;
 ab = [O16_ab N14_ab C12_ab Zn64_ab Zn66_ab Zn68_ab];
@@ -407,6 +413,32 @@ xlabel('Proton energy (MeV)')
 ylabel('Cross section (barn)')
 title('I127-Xe122 cross sections')
 
+%% Fit 127I-127mXe MeV
+figure
+hold off
+plot(I127_Xem_E,I127_Xem_CS,'bo'); hold on
+I127_Xem_F = fit(I127_Xem_E,I127_Xem_CS,'smoothingspline','SmoothingParam',0.99)
+I127_Xem_F.p.coefs(1,:) = [0 0 0 0];
+I127_Xem_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,I127_Xem_F(Eval),'r-')
+axis([0 300 0 1.0]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('I127-Xe127m cross sections')
+
+%% Fit 23Na-23Mg
+figure
+hold off
+plot(Na23_Mg23_E,Na23_Mg23_CS,'bo'); hold on
+Na23_Mg23_F = fit(Na23_Mg23_E,Na23_Mg23_CS,'smoothingspline','SmoothingParam',0.99)
+Na23_Mg23_F.p.coefs(1,:) = [0 0 0 0];
+Na23_Mg23_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,Na23_Mg23_F(Eval),'r-')
+axis([0 50 0 1.0]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Na23Mg23 cross sections')
+
 %% Plot all (water)
 figure
 hold off
@@ -469,27 +501,43 @@ S_p_F.p.coefs(1,:) = [0 0 0 0];
 S_p_F.p.coefs(end,:) = [0 0 0 0];
 S_pb_F = fit(E_keV_PMMA,S_Pb,'smoothingspline','SmoothingParam',0.002)
 S_pb_F.p.coefs(1,:) = [0 0 0 0];
-S_pb_F.p.coefs(end,:) = [0 0 0 0];S_i_F = fit(E_keV_Iodo,S_Iodo,'smoothingspline','SmoothingParam',0.002)
+S_pb_F.p.coefs(end,:) = [0 0 0 0];
+S_i_F = fit(E_keV_Iodo,S_Iodo,'smoothingspline','SmoothingParam',0.002)
 S_i_F.p.coefs(1,:) = [0 0 0 0];
 S_i_F.p.coefs(end,:) = [0 0 0 0];
+S_CsI_F = fit(E_keV_CsI,S_CsI,'smoothingspline','SmoothingParam',0.002)
+S_CsI_F.p.coefs(1,:) = [0 0 0 0];
+S_CsI_F.p.coefs(end,:) = [0 0 0 0];
+S_NaI_F = fit(E_keV_NaI,S_NaI,'smoothingspline','SmoothingParam',0.002)
+S_NaI_F.p.coefs(1,:) = [0 0 0 0];
+S_NaI_F.p.coefs(end,:) = [0 0 0 0];
+S_Carbon_F = fit(E_keV_carbon,S_Carbon,'smoothingspline','SmoothingParam',0.002)
+S_Carbon_F.p.coefs(1,:) = [0 0 0 0];
+S_Carbon_F.p.coefs(end,:) = [0 0 0 0];
 loglog(E_keV,S_Zn_F(E_keV),'r-')
 hold on;
-loglog(E_keV,S_Zn66,'ro')
-loglog(E_keV,S_w_F(E_keV),'b-')
-loglog(E_keV,S_w,'bo')
-loglog(E_keV,S_t_F(E_keV),'g-')
-loglog(E_keV,S_tissue,'go')
-loglog(E_keV_bone,S_bone,'yo')
-loglog(E_keV_bone,S_b_F(E_keV_bone),'y-')
-loglog(E_keV_adipose,S_adipose,'mo')
-loglog(E_keV_adipose,S_a_F(E_keV_adipose),'m-')
-loglog(E_keV_PMMA,S_PMMA,'co')
-loglog(E_keV_PMMA,S_p_F(E_keV_PMMA),'c-')
+% loglog(E_keV,S_Zn66,'ro')
+% loglog(E_keV,S_w_F(E_keV),'b-')
+% loglog(E_keV,S_w,'bo')
+% loglog(E_keV,S_t_F(E_keV),'g-')
+% loglog(E_keV,S_tissue,'go')
+% loglog(E_keV_bone,S_bone,'yo')
+% loglog(E_keV_bone,S_b_F(E_keV_bone),'y-')
+ loglog(E_keV_adipose,S_adipose,'mo')
+ loglog(E_keV_adipose,S_a_F(E_keV_adipose),'m-')
+% loglog(E_keV_PMMA,S_PMMA,'co')
+% loglog(E_keV_PMMA,S_p_F(E_keV_PMMA),'c-')
 %loglog(E_keV_PMMA,S_Pb)
 %loglog(E_keV_PMMA,S_pb_F(E_keV_PMMA))
-loglog(E_keV_Iodo,S_Iodo,'co')
-loglog(E_keV_Iodo,S_i_F(E_keV_Iodo),'c-')
-legend('Zn66 fit','Zn66 SRIM data', 'Water fit', 'Water SRIM data', 'Tissue fit', 'Tissue SRIM data','Bone fit', 'Bone data', 'Adipose data','Adipose fit','PMMA','fit PMMA', 'Iodo');
+loglog(E_keV_Iodo,S_Iodo,'ko')
+loglog(E_keV_Iodo,S_i_F(E_keV_Iodo),'k-')
+loglog(E_keV_CsI,S_CsI,'mo')
+loglog(E_keV_CsI,S_CsI_F(E_keV_CsI),'m-')
+loglog(E_keV_NaI,S_NaI,'bo')
+loglog(E_keV_NaI,S_NaI_F(E_keV_NaI),'b-')
+loglog(E_keV_carbon,S_Carbon,'yo')
+loglog(E_keV_carbon,S_Carbon_F(E_keV_carbon),'y-')
+legend('Zn66 fit','Zn66 SRIM data', 'Water fit', 'Water SRIM data', 'Tissue fit', 'Tissue SRIM data','Bone fit', 'Bone data', 'Adipose data','Adipose fit','PMMA','fit PMMA', 'Iodo','fit Iodo','CsI','fit CsI','NaI','fir NaI');
 xlabel('Proton energy (MeV)');
 ylabel('Stopping power (MeV/(cm2/mg))');
 %%

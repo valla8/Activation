@@ -8,18 +8,20 @@ clear all;close all;
 %Cargamos las vidas medias, secciones eficaces y stopping power para
 %ahorrar tiempo de calculo.
 load('control1.mat');
+load('solo_50mev.mat');
 
 %PARAMETROS
 dx=0.02;      %Paso del intervalo (cm)
-xref=20;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=140;        %Energía inicial del haz
+xref=3;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=50;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
 a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
 pps=1;         %protones/segundo
 MeVJ=1.6e-13;
-I_fraction = 0.10;
+I_fraction = 0.15;
+landa_Xe127 = log(2)/69.2;
 %% Composiciones
 
 % Composición materiales
@@ -70,7 +72,7 @@ rho_I_A = I_fraction * rho_I * AvNmbr / I_Molar; % molecules / cm3
 %Calculamos la densidad de cada isótopo multiplicando por su peso y su
 %abundancia. Se hace para cada material bone(b) tissue(t) PMMA(p)
 %adipose(a) water ()
-rho_O16_A = rho_w_A * O16_ab; % atoms/cm3
+rho_O16_A = rho_w_A *Comp_water_I(4) * O16_ab; % atoms/cm3
 rho_O16_Ab = rho_bone_A * Comp_bone(4) * O16_ab;
 rho_N14_Ab = rho_bone_A * Comp_bone(3) * N14_ab;
 rho_C12_Ab = rho_bone_A * Comp_bone(2) * C12_ab;
@@ -127,6 +129,7 @@ Y_I127_Xe127w = zeros(size(x));
 Y_I127_Xe125w = zeros(size(x));
 Y_I127_Xe122w = zeros(size(x));
 Y_I127_Xe123w = zeros(size(x));
+Y_Xe127mw = zeros(size(x));
 
 % In tissue (simplified form only)
 Y_O16_C11t = zeros(size(x));
@@ -146,6 +149,7 @@ Y_I127_Xe127t = zeros(size(x));
 Y_I127_Xe125t = zeros(size(x));
 Y_I127_Xe122t = zeros(size(x));
 Y_I127_Xe123t = zeros(size(x));
+Y_Xe127mt = zeros(size(x));
 
 % In bone (simplified form only)
 Y_O16_C11b = zeros(size(x));
@@ -166,6 +170,7 @@ Y_I127_Xe127b = zeros(size(x));
 Y_I127_Xe125b = zeros(size(x));
 Y_I127_Xe122b = zeros(size(x));
 Y_I127_Xe123b = zeros(size(x));
+Y_Xe127mb = zeros(size(x));
 
 % In adipose (simplified form only)
 Y_O16_C11a = zeros(size(x));
@@ -185,6 +190,7 @@ Y_I127_Xe127a = zeros(size(x));
 Y_I127_Xe125a = zeros(size(x));
 Y_I127_Xe122a = zeros(size(x));
 Y_I127_Xe123a = zeros(size(x));
+Y_Xe127ma = zeros(size(x));
 
 % In PMMA (simplified form only)
 Y_O16_C11p = zeros(size(x));
@@ -315,13 +321,14 @@ for i=1:(numel(x)-1)
     sigma_PG_N14_1w = 0.5 * (max(0,PG_N14_N14_1_F(E1)) + max(0,PG_N14_N14_1_F(E2)));
     sigma_PG_N14_2w = 0.5 * (max(0,PG_N14_N14_2_F(E1)) + max(0,PG_N14_N14_2_F(E2)));
     sigma_PG_O16_6w = 0.5 * (max(0,PG_O16_O16_6_F(E1)) + max(0,PG_O16_O16_6_F(E2)));
-    sigma_C11_mean = 0.5 * (O16_C11_F(E1) + O16_C11_F(E2));
-    sigma_N13_mean = 0.5 * (O16_N13_F(E1) + O16_N13_F(E2));
-    sigma_O15_mean = 0.5 * (O16_O15_F(E1) + O16_O15_F(E2));
+    sigma_C11_mean = 0.5 * (max(0,O16_C11_F(E1)) + (max(0,O16_C11_F(E2))));
+    sigma_N13_mean = 0.5 * (max(0,O16_N13_F(E1)) + (max(0,O16_N13_F(E2))));
+    sigma_O15_mean = 0.5 * (max(0,O16_O15_F(E1)) + (max(0,O16_O15_F(E2))));
     sigma_127Xe_mean = 0.5 * (max(0,I127_Xe127_F(E1)) +max(0,I127_Xe127_F(E2)));
     sigma_125Xe_mean = 0.5 * (max(0,I127_Xe125_F(E1)) + max(0,I127_Xe125_F(E2)));
     sigma_123Xe_mean = 0.5 * (max(0,I127_Xe123_F(E1)) + max(0,I127_Xe123_F(E2)));
     sigma_122Xe_mean = 0.5 * (max(0,I127_Xe122_F(E1)) + max(0,I127_Xe122_F(E2)));
+    sigma_127m = 0.5 * (max(0,I127_Xem_F(E1)) + max(0,I127_Xem_F(E2)));
     Y_O16_C11s(i) = pps * rho_O16_A * sigma_C11_mean * 1e-24 * dx;
     Y_O16_N13s(i) = pps * rho_O16_A * sigma_N13_mean * 1e-24 * dx;
     Y_O16_O15s(i) = pps * rho_O16_A * sigma_O15_mean * 1e-24 * dx;
@@ -331,6 +338,7 @@ for i=1:(numel(x)-1)
     Y_I127_Xe125w(i) = pps * rho_I_A * sigma_125Xe_mean * 1e-24 * dx;
     Y_I127_Xe123w(i) = pps * rho_I_A * sigma_123Xe_mean * 1e-24 * dx;
     Y_I127_Xe122w(i) = pps * rho_I_A * sigma_122Xe_mean * 1e-24 * dx;
+    Y_Xe127mw(i) = pps * rho_I_A * sigma_127m * 1e-24 * dx;
 
     
     % Tissue (simplified only)
@@ -351,6 +359,7 @@ for i=1:(numel(x)-1)
     sigma_125Xe_meant = 0.5 * (max(0,I127_Xe125_F(E1t)) + max(0,I127_Xe125_F(E2t)));
     sigma_123Xe_meant = 0.5 * (max(0,I127_Xe123_F(E1t)) + max(0,I127_Xe123_F(E2t)));
     sigma_122Xe_meant = 0.5 * (max(0,I127_Xe122_F(E1t)) + max(0,I127_Xe122_F(E2t)));
+    sigma_127m = 0.5 * (max(0,I127_Xem_F(E1t)) + max(0,I127_Xem_F(E2t)));
     Y_O16_C11t(i) = pps * rho_O16_At * sigma_C11_meant * 1e-24 * dx;
     Y_O16_N13t(i) = pps * rho_O16_At * sigma_N13_meant * 1e-24 * dx;
     Y_O16_O15t(i) = pps * rho_O16_At * sigma_O15_meant * 1e-24 * dx;
@@ -368,6 +377,7 @@ for i=1:(numel(x)-1)
     Y_I127_Xe125t(i) = pps * rho_I_A * sigma_125Xe_meant * 1e-24 * dx;
     Y_I127_Xe123t(i) = pps * rho_I_A * sigma_123Xe_meant * 1e-24 * dx;
     Y_I127_Xe122t(i) = pps * rho_I_A * sigma_122Xe_meant * 1e-24 * dx;
+    Y_Xe127mt(i) = pps * rho_I_A * sigma_127m * 1e-24 * dx;
 
     
     
@@ -391,6 +401,7 @@ for i=1:(numel(x)-1)
     sigma_125Xe_meanb = 0.5 * (max(0,I127_Xe125_F(E1b)) + max(0,I127_Xe125_F(E2b)));
     sigma_123Xe_meanb = 0.5 * (max(0,I127_Xe123_F(E1b)) + max(0,I127_Xe123_F(E2b)));
     sigma_122Xe_meanb = 0.5 * (max(0,I127_Xe122_F(E1b)) + max(0,I127_Xe122_F(E2b)));
+    sigma_127m = 0.5 * (max(0,I127_Xem_F(E1b)) + max(0,I127_Xem_F(E2b)));
     Y_O16_C11b(i) = pps * rho_O16_Ab * sigma_C11_meanb * 1e-24 * dx;
     Y_O16_N13b(i) = pps * rho_O16_Ab * sigma_N13_meanb * 1e-24 * dx;
     Y_O16_O15b(i) = pps * rho_O16_Ab * sigma_O15_meanb * 1e-24 * dx;
@@ -409,6 +420,7 @@ for i=1:(numel(x)-1)
     Y_I127_Xe125b(i) = pps * rho_I_A * sigma_125Xe_meanb * 1e-24 * dx;
     Y_I127_Xe123b(i) = pps * rho_I_A * sigma_123Xe_meanb * 1e-24 * dx;
     Y_I127_Xe122b(i) = pps * rho_I_A * sigma_122Xe_meanb * 1e-24 * dx;
+    Y_Xe127mt(i) = pps * rho_I_A * sigma_127m * 1e-24 * dx;
     
         % Adipose (simplified only)
 
@@ -429,6 +441,7 @@ for i=1:(numel(x)-1)
     sigma_125Xe_meana = 0.5 * (max(0,I127_Xe125_F(E1a)) + max(0,I127_Xe125_F(E2a)));
     sigma_123Xe_meana = 0.5 * (max(0,I127_Xe123_F(E1a)) + max(0,I127_Xe123_F(E2a)));
     sigma_122Xe_meana = 0.5 * (max(0,I127_Xe122_F(E1a)) + max(0,I127_Xe122_F(E2a)));
+    sigma_127m = 0.5 * (max(0,I127_Xem_F(E1a)) + max(0,I127_Xem_F(E2a)));
     Y_O16_C11a(i) = pps * rho_O16_Aa * sigma_C11_meana * 1e-24 * dx;
     Y_O16_N13a(i) = pps * rho_O16_Aa * sigma_N13_meana * 1e-24 * dx;
     Y_O16_O15a(i) = pps * rho_O16_Aa * sigma_O15_meana * 1e-24 * dx;
@@ -446,6 +459,7 @@ for i=1:(numel(x)-1)
     Y_I127_Xe125a(i) = pps * rho_I_A * sigma_125Xe_meana * 1e-24 * dx;
     Y_I127_Xe123a(i) = pps * rho_I_A * sigma_123Xe_meana * 1e-24 * dx;
     Y_I127_Xe122a(i) = pps * rho_I_A * sigma_122Xe_meana * 1e-24 * dx;
+    Y_Xe127ma(i) = pps * rho_I_A * sigma_127m * 1e-24 * dx;
     
     
             % PMMA (simplified only)
@@ -516,7 +530,7 @@ for i=1:length(x)
 end
 Da_t=Edept*1.6e-13/rho_tissue;
 Np_t=1/Da_t;
-Con_t=Np_t*MeVJ;
+Con_t=Np_t*MeVJ/rho_tissue;
 
 %Adipose
 Edepa=0;
@@ -527,7 +541,7 @@ for i=1:length(x)
 end
 Da_a=Edepa*1.6e-13/rho_adipose;
 Np_a=1/Da_a;
-Con_a=Np_a*MeVJ;
+Con_a=Np_a*MeVJ/rho_adipose;
 
 %Bone
 Edepb=0;
@@ -538,7 +552,7 @@ for i=1:length(x)
 end
 Da_b=Edepb*1.6e-13/rho_bone;
 Np_b=1/Da_b;
-Con_b=Np_b*MeVJ;
+Con_b=Np_b*MeVJ/rho_bone;
 
 %PMMA
 Edepp=0;
@@ -549,12 +563,13 @@ for i=1:length(x)
 end
 Da_p=Edep*1.6e-13/rho_PMMA;
 Np_p=1/Da_p;
-Con_p=Np_p*MeVJ;
+Con_p=Np_p*MeVJ/rho_PMMA;
+
 
 %% Create plots de emisores beta+
 
 % Figure in water
-figure('rend','painters','pos',[10 10 800 421])
+figure('rend','painters','pos',[10 10 900 421])
 %subplot(2,1,1)
 %plot(x,E)
 yyaxis right
@@ -563,32 +578,36 @@ ylabel('Dose (a.u.)')
 title('Water');
 %hold on
 plot(x,Con_w*Ddep,'linewidth',2)
-ylabel('Dose (Gy/cm^3)')
+ylabel('Dose (Gy)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 30 0 (max(Con_w*Ddep)+0.2*(max(Con_w*Ddep)))]);
 %subplot(2,1,2)
 yyaxis left
-title('Yields of Water');
+title(' Water');
 hold on
-ylabel('\beta^+ isotopes/Gy/mm');
-Y_wt= Y_O16_C11s+Y_O16_N13s+Y_O16_O15s+Y_I127_Xe127w+Y_I127_Xe125w+Y_I127_Xe123w+Y_I127_Xe122w;
+ylabel('\beta^+ isotopes/Gy/mm³');
+Y_wt= Y_O16_C11s+Y_O16_N13s+Y_O16_O15s+Y_Xe127mw;
+%Y_wt= Y_O16_C11s+Y_O16_N13s+Y_O16_O15s+Y_I127_Xe127w+Y_I127_Xe125w+Y_I127_Xe123w+Y_I127_Xe122w;
 plot(x,Np_w/pps*Y_O16_C11s,'k'); hold on
 plot(x,Np_w/pps*Y_O16_N13s,'c')
 plot(x,Np_w/pps*Y_O16_O15s,'m')
-plot(x,Np_w/pps*Y_I127_Xe127w,'g-o')
-plot(x,Np_w/pps*Y_I127_Xe125w,'b-o')
-plot(x,Np_w/pps*Y_I127_Xe123w,'y-o')
-plot(x,Np_w/pps*Y_I127_Xe122w,'r-o')
+plot(x,Np_w/pps*Y_Xe127mw,'r-o')
+% plot(x,Np_w/pps*Y_I127_Xe127w,'g-o')
+% plot(x,Np_w/pps*Y_I127_Xe125w,'b-o')
+% plot(x,Np_w/pps*Y_I127_Xe123w,'y-o')
+% plot(x,Np_w/pps*Y_I127_Xe122w,'r-o')
 plot(x,Np_w/pps*Y_wt,'k','linewidth',2)
 set(gca,'FontSize',14)
-legend('C11','N13','O15','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
-[f,g]=min(Ddep);
+[f,g]=min(Ddep);[r,t]=min(Ddep_sw);
+x_solow=x_solo+(g-t)*dx;
+plot(x_solow,Y_solow,'r','linewidth',2);
 grid on
+legend('C11','N13','O15','Xe127','Xe125','Xe123','Xe122','Total','Solo Agua','Location', 'bestoutside');
 axis([g*dx-1 g*dx+0.00*g*dx 0 max(Np_w/pps*Y_wt)+0.2*max(Np_w/pps*Y_wt)]);
 
 % Figure in tisssue
-figure('rend','painters','pos',[10 10 800 421])
+figure('rend','painters','pos',[10 10 900 421])
 %subplot(2,1,1)
 %plot(x,Et)
 yyaxis right
@@ -597,7 +616,7 @@ ylabel(' Dose (a.u.)')
 title('Tissue');
 hold on
 plot(x,Con_t*Ddept,'linewidth',2)
-ylabel('Dose (Gy/cm^3)')
+ylabel('Dose (Gy)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 17 0 (max(Con_t*Ddept)+0.2*(max(Con_t*Ddep)))]);
@@ -620,15 +639,17 @@ plot(x,Np_t/pps*Y_I127_Xe125t,'b-o')
 plot(x,Np_t/pps*Y_I127_Xe123t,'r-o')
 plot(x,Np_t/pps*Y_I127_Xe122t,'m-o')
 plot(x,Np_t/pps*Y_tt,'k','linewidth',2)
-legend('C11','N13','O15','C10','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
-[f,g]=min(Ddept);
+[f,g]=min(Ddept);[r,t]=min(Ddep_st);
+x_solot=x_solo+(g-t)*dx;
+plot(x_solot,Y_solot,'r','linewidth',2);
 axis([g*dx-1 g*dx+0.00*g*dx 0 max(max(Np_t/pps*Y_tt)+0.2*max(Np_t/pps*Y_tt))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/Gy/mm');
+ylabel('\beta^+ isotopes/Gy/mm³');
+legend('C11','N13','O15','C10','Xe127','Xe125','Xe123','Xe122','Total','Solo Piel','Location', 'bestoutside');
 set(gca,'FontSize',14)
 
 % Figure in adipose
-figure('rend','painters','pos',[10 10 800 421])
+figure('rend','painters','pos',[10 10 900 421])
 %subplot(2,1,1)
 %plot(x,Ea)
 yyaxis right
@@ -637,7 +658,7 @@ ylabel('Dose (a.u.)')
 title('Adipose');
 hold on
 plot(x,Con_a*Ddepa,'linewidth',2)
-ylabel('Dose (Gy/cm^3)')
+ylabel('Dose (Gy)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 20 0 (max(Con_a*Ddepa)+0.2*max(Con_a*Ddepa))]);
@@ -660,15 +681,17 @@ plot(x,Np_a/pps*Y_I127_Xe125a,'b-o')
 plot(x,Np_a/pps*Y_I127_Xe123a,'y-o')
 plot(x,Np_a/pps*Y_I127_Xe122a,'r-o')
 plot(x,Np_a/pps*Y_ta,'k','linewidth',2)
-legend('C11','N13','O15','C10','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
-[f,g]=min(Ddepa);
+[f,g]=min(Ddepa);[r,t]=min(Ddep_sa);
+x_soloa=x_solo+(g-t)*dx;
+plot(x_soloa,Y_soloa,'r','linewidth',2);
 axis([g*dx-1 g*dx+0.00*g*dx 0 max(max(Np_a/pps*Y_ta)+0.2*max(Np_a/pps*Y_ta))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/Gy/mm');
+ylabel('\beta^+ isotopes/Gy/mm³');
+legend('C11','N13','O15','C10','Xe127','Xe125','Xe123','Xe122','Total','Solo Grasa','Location', 'bestoutside');
 set(gca,'FontSize',14)
 
 % Figure in bone
-figure('rend','painters','pos',[10 10 800 421])
+figure('rend','painters','pos',[10 10 900 421])
 %subplot(2,1,1)
 %plot(x,Eb)
 yyaxis right
@@ -677,7 +700,7 @@ ylabel('Dose (a.u.)')
 title('Bone');
 hold on
 plot(x,Con_b*Ddepb,'linewidth',2)
-ylabel('Dose (Gy/cm^3)')
+ylabel('Dose (Gy)')
 legend('Dose')
 set(gca,'FontSize',14)
 axis([0 11 0 (max(Con_b*Ddepb)+0.2*max(Con_b*Ddepb))]);
@@ -702,11 +725,13 @@ plot(x,Np_b/pps*Y_I127_Xe125b,'b-o')
 plot(x,Np_b/pps*Y_I127_Xe123b,'y-o')
 plot(x,Np_b/pps*Y_I127_Xe122b,'r-o')
 plot(x,Np_b/pps*Y_tb,'k','linewidth',2)
-legend('C11','N13','O15','C10','Sc44','Xe127','Xe125','Xe123','Xe122','Total','Location', 'bestoutside');
-[f,g]=min(Ddepb);
+[f,g]=min(Ddepb);[r,t]=min(Ddep_sb);
+x_solob=x_solo+(g-t)*dx;
+plot(x_solob,Y_solob,'r','linewidth',2);
 axis([g*dx-1 g*dx+0.00*g*dx 0 max(max(Np_b/pps*Y_tb)+0.2*max(Np_b/pps*Y_tb))]);
 xlabel('Depth (cm)');
-ylabel('\beta^+ isotopes/Gy/mm');
+ylabel('\beta^+ isotopes/Gy/mm³');
+legend('C11','N13','O15','C10','Sc44','Xe127','Xe125','Xe123','Xe122','Total','Solo Hueso','Location', 'bestoutside');
 set(gca,'FontSize',14)
 
 % % Figure in PMMA
@@ -968,7 +993,7 @@ set(gca,'FontSize',14)
 
 %% PET activity (t) para un cierto número de protones que llegan simultaneamente
 %Valores para los que se pretende calcular la actividad
-calcTimes = [0 60 1000 3600]; % s
+calcTimes = [0 5 20 60]; % s
 
 %Definimos las variables
 act_C11 = zeros(numel(calcTimes), numel(x));
@@ -978,6 +1003,7 @@ act_Xe127 = zeros(numel(calcTimes), numel(x));
 act_Xe125 = zeros(numel(calcTimes), numel(x));
 act_Xe123 = zeros(numel(calcTimes), numel(x));
 act_Xe122 = zeros(numel(calcTimes), numel(x));
+act_casw = zeros(numel(calcTimes), numel(x));
 
 act_C11t = zeros(numel(calcTimes), numel(x));
 act_C10t = zeros(numel(calcTimes), numel(x));
@@ -1020,7 +1046,7 @@ act_Xe122b = zeros(numel(calcTimes), numel(x));
 % act_Xe123p = zeros(numel(calcTimes), numel(x));
 % act_Xe122p = zeros(numel(calcTimes), numel(x));
 
-
+%%
 deltat=1
 %Calculo Actividad
 %Como hemos introducido el p/s en el Yield roduction tenemos que calcular
@@ -1034,6 +1060,7 @@ for i=1:numel(calcTimes)
     act_Xe125(i,:) = deltat * landa_Xe125 .* Y_I127_Xe125w .* exp(- landa_Xe125 * calcTimes(i));
     act_Xe123(i,:) = deltat * landa_Xe123 .* Y_I127_Xe123w .* exp(- landa_Xe123 * calcTimes(i));
     act_Xe122(i,:) = deltat * landa_Xe122 .* Y_I127_Xe122w .* exp(- landa_Xe122 * calcTimes(i));
+    act_casw(i,:) = deltat * landa_Xe127m .* Y_Xe127mw .* exp(- landa_Xe127m * calcTimes(i));
     
     % Tissue
     act_C11t(i,:) = deltat * landa_C11 .* Y_C11t .* exp(- landa_C11 * calcTimes(i));
@@ -1078,34 +1105,70 @@ for i=1:numel(calcTimes)
     
     
 end
-act_total = (act_C11 + act_N13 + act_O15+act_Xe127+act_Xe125+act_Xe123+act_Xe122);
+%act_total = (act_C11 + act_N13 + act_O15+act_Xe127+act_Xe125+act_Xe123+act_Xe122);
+act_total_solo = (act_C11 + act_N13 + act_O15);
+act_total = (act_C11 + act_N13 + act_O15+act_casw);
 act_totalt = (act_C11t + act_C10t + act_N13t + act_O15t+act_Xe127t+act_Xe125t+act_Xe123t+act_Xe122t);
 act_totala = (act_C11a + act_C10a + act_N13a + act_O15a+act_Xe127a+act_Xe125a+act_Xe123a+act_Xe122a);
 act_totalb = (act_C11b + act_C10b + act_N13b + act_O15b+act_Sc44b+act_Xe127b+act_Xe125b+act_Xe123b+act_Xe122b);
-act_totalp = (act_C11p + act_C10p + act_N13p + act_O15p+act_Xe127p+act_Xe125p+act_Xe123p+act_Xe122p);
+% act_totalp = (act_C11p + act_C10p + act_N13p + act_O15p+act_Xe127p+act_Xe125p+act_Xe123p+act_Xe122p);
 
-
+%%
 %Representación gráfica de los 4 tiempos calculados
+E=figure;
 F=figure;
 G=figure;
 H=figure;
-I=figure;
+%I=figure;
 AAA=length(calcTimes);
 
 for i=1:numel(calcTimes)
+    
+    figure(E)
+    subplot(2,2,i)
+    yyaxis left
+    plot(x, Np_w/pps*act_total(i,:),'k','linewidth',2)
+    hold on
+    plot(x, Np_w/pps*1/(1-I_fraction)*act_total_solo(i,:),'r','linewidth',2)
+    plot(x, Np_w/pps*act_C11(i,:),'k')
+    plot(x, Np_w/pps*act_N13(i,:),'c')
+    plot(x, Np_w/pps*act_O15(i,:),'m')
+     plot(x, Np_w/pps*act_casw(i,:),'g-o')
+%     plot(x, Np_w/pps*act_Xe127(i,:),'g-o')
+%     plot(x, Np_w/pps*act_Xe125(i,:),'k-o')
+%     plot(x,Np_w/pps* act_Xe123(i,:),'b-o')
+%     plot(x, Np_w/pps*act_Xe122(i,:),'m-o')
+    title(sprintf('Activity at t=%i s ',calcTimes(i)));
+    xlabel('Depth (cm)')
+    ylabel('Beta+/Gy/mm³/s ');
+    if i==1
+    legend('Total','Solo Agua','C11','N13','O15','Xe127m', 'Location', 'northwest');
+    %legend('Total','Solo Agua','C11','N13','O15','Xe127','Xe125','Xe123','Xe122', 'Location', 'northwest');
+    end
+    set(gca, 'FontSize', 16)   
+  
+    
+    yyaxis right
+    grid on
+    plot(x,100*Ddept);
+    ylabel('Dose (Gy)')
+    [f,g]=min(Ddept);
+    axis([-1+g*dx g*dx+0.00*g*dx 0 max(100*Ddept)+0.2*max(100*Ddept)]);
+    
     figure(F)
     subplot(2,2,i)
     yyaxis left
-    plot(x, act_totalt(i,:),'b')
+    plot(x, Np_t/pps*act_totalt(i,:),'k','linewidth',2)
     hold on
-    plot(x, act_C11t(i,:),'r')
-    plot(x, act_N13t(i,:),'y')
-    plot(x, act_O15t(i,:),'c')
-    plot(x, act_C10t(i,:),'g')
-    plot(x, act_Xe127t(i,:),'ro')
-    plot(x, act_Xe125t(i,:),'ko')
-    plot(x, act_Xe123t(i,:),'bo')
-    plot(x, act_Xe122t(i,:),'mo')
+    plot(x_solot,act_total_solot(i,:),'r','linewidth',2)
+    plot(x, Np_t/pps*act_C11t(i,:),'k')
+    plot(x, Np_t/pps*act_N13t(i,:),'c')
+    plot(x, Np_t/pps*act_O15t(i,:),'m')
+    plot(x, Np_t/pps*act_C10t(i,:),'y')
+    plot(x, Np_t/pps*act_Xe127t(i,:),'g-o')
+    plot(x, Np_t/pps*act_Xe125t(i,:),'k-o')
+    plot(x, Np_t/pps*act_Xe123t(i,:),'b-o')
+    plot(x, Np_t/pps*act_Xe122t(i,:),'m-o')
     title(sprintf('Activity at t=%i s ',calcTimes(i)));
     xlabel('Depth (cm)')
     ylabel('Beta+/proton/mm/s ');
@@ -1118,74 +1181,84 @@ for i=1:numel(calcTimes)
     plot(x,100*Ddept);
     ylabel('-dE/dx')
     [f,g]=min(Ddept);
-    axis([0 (ceil(g*dx)) 0 max(100*Ddept)+0.2*max(100*Ddept)]);
+    axis([-1+g*dx g*dx+0.00*g*dx 0 max(100*Ddept)+0.2*max(100*Ddept)]);
     
     figure(G)
     subplot(2,2,i)
     yyaxis left
-    plot(x, act_totala(i,:),'b')
+    plot(x, Np_a/pps*act_totala(i,:),'k','linewidth',2)
     hold on
-    plot(x, act_C11a(i,:),'r')
-    plot(x, act_N13a(i,:),'y')
-    plot(x, act_O15a(i,:),'c')
-    plot(x, act_C10a(i,:),'g')
+    plot(x_soloa,act_total_soloa(i,:),'r','linewidth',2)
+    plot(x, Np_a/pps*act_C11a(i,:),'r')
+    plot(x, Np_a/pps*act_N13a(i,:),'c')
+    plot(x, Np_a/pps*act_O15a(i,:),'m')
+    plot(x, Np_a/pps*act_C10a(i,:),'y')
+    plot(x, Np_a/pps*act_Xe127a(i,:),'g-o')
+    plot(x, Np_a/pps*act_Xe125a(i,:),'k-o')
+    plot(x, Np_a/pps*act_Xe123a(i,:),'b-o')
+    plot(x, Np_a/pps*act_Xe122a(i,:),'m-o')
     title(sprintf('Activity at t=%i s',calcTimes(i)));
     xlabel('Depth (cm)')
     ylabel('Beta+/proton/mm/s ');
     legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
     set(gca, 'FontSize', 16)   
-    axis([0 5 0 max(act_totala(i,:))+0.2*max(act_totala(i,:))]);   
+    axis([0 5 0 max(Np_a/pps*act_totala(i,:))+0.2*max(Np_a/pps*act_totala(i,:))]);   
     yyaxis right
     grid on
     plot(x,100*Ddepa);
     ylabel('-dE/dx')
     [f,g]=min(Ddepa);
-    axis([0 (ceil(g*dx)) 0 max(100*Ddepa)+0.2*max(100*Ddepa)]);
+    axis([-1+g*dx g*dx+0.00*g*dx 0 max(100*Ddepa)+0.2*max(100*Ddepa)]);
     
     figure(H)
     subplot(2,2,i)
     yyaxis left
-    plot(x, act_totalb(i,:),'b')
+    plot(x, Np_b/pps*act_totalb(i,:),'k','linewidth',2)
     hold on
-    plot(x, act_C11b(i,:),'r')
-    plot(x, act_N13b(i,:),'y')
-    plot(x, act_O15b(i,:),'c')
-    plot(x, act_C10b(i,:),'g')
+    plot(x_solob,act_total_solob(i,:),'r','linewidth',2)
+    plot(x, Np_b/pps*act_C11b(i,:),'r')
+    plot(x, Np_b/pps*act_N13b(i,:),'y')
+    plot(x, Np_b/pps*act_O15b(i,:),'c')
+    plot(x, Np_b/pps*act_C10b(i,:),'g')
+    plot(x, Np_b/pps*act_Xe127b(i,:),'g-o')
+    plot(x, Np_b/pps*act_Xe125b(i,:),'k-o')
+    plot(x, Np_b/pps*act_Xe123b(i,:),'b-o')
+    plot(x, Np_b/pps*act_Xe122b(i,:),'m-o')
     title(sprintf('Activity at t=%i s ',calcTimes(i)));
     xlabel('Depth (cm)')
     ylabel('Beta+/proton/mm/s ');
     legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
     set(gca, 'FontSize', 16) 
-    axis([0 11 0 max(act_totalb(i,:))+0.2*max(act_totalb(i,:))]);     
+    axis([0 11 0 max(Np_b/pps*act_totalb(i,:))+0.2*max(Np_b/pps*act_totalb(i,:))]);     
     yyaxis right
     grid on
     plot(x,100*Ddepb);
     ylabel('-dE/dx')
     [f,g]=min(Ddepb);
-    axis([0 (ceil(g*dx)) 0 max(100*Ddepb)+0.2*max(100*Ddepb)]);
+    axis([-1+g*dx g*dx+0.00*g*dx 0 max(100*Ddepb)+0.2*max(100*Ddepb)]);
     
-    figure(I);
-    subplot(2,2,i)
-    yyaxis left
-    plot(x, act_totalp(i,:),'b')
-    hold on
-    plot(x, act_C11p(i,:),'r')
-    plot(x, act_N13p(i,:),'y')
-    plot(x, act_O15p(i,:),'c')
-    plot(x, act_C10p(i,:),'g')
-    title(sprintf('Activity at t=%i s ',calcTimes(i)));
-    xlabel('Depth (cm)')
-    ylabel('Beta+/proton/mm/s ');
-    legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
-    set(gca, 'FontSize', 16)   
-  
-    
-    yyaxis right
-    grid on
-    plot(x,100*Ddepp);
-    ylabel('-dE/dx')
-    [f,g]=min(Ddepp);
-    axis([0 (ceil(g*dx)) 0 max(100*Ddepp)+0.2*max(100*Ddepp)]);
+%     figure(I);
+%     subplot(2,2,i)
+%     yyaxis left
+%     plot(x, act_totalp(i,:),'b')
+%     hold on
+%     plot(x, act_C11p(i,:),'r')
+%     plot(x, act_N13p(i,:),'y')
+%     plot(x, act_O15p(i,:),'c')
+%     plot(x, act_C10p(i,:),'g')
+%     title(sprintf('Activity at t=%i s ',calcTimes(i)));
+%     xlabel('Depth (cm)')
+%     ylabel('Beta+/proton/mm/s ');
+%     legend('Total','C11','N13','O15','C10', 'Location', 'northwest');
+%     set(gca, 'FontSize', 16)   
+%   
+%     
+%     yyaxis right
+%     grid on
+%     plot(x,100*Ddepp);
+%     ylabel('-dE/dx')
+%     [f,g]=min(Ddepp);
+%     axis([0 (ceil(g*dx)) 0 max(100*Ddepp)+0.2*max(100*Ddepp)]);
 end
 
 
