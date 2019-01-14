@@ -242,7 +242,7 @@ title('O16->C11 cross sections')
 figure
 hold off
 plot(O16_N13_E,O16_N13_CS,'bo'); hold on
-O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.2)
+O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.02)
 O16_N13_F.p.coefs(1,:) = [0 0 0 0];
 O16_N13_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O16_N13_F(Eval),'r-')
