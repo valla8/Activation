@@ -14,7 +14,7 @@ load('solo_50mev.mat');
 landa_F18 =  log(2) / 6586;
 
 %PARAMETROS
-dx=0.1;      %Paso del intervalo (cm)
+dx=0.05;      %Paso del intervalo (cm)
 xref=10;       %Distancia que va a simular, poner un número acorde a la energia inicial.
 E0=100;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
@@ -22,7 +22,7 @@ a=120/deltat;  %Tiempo de irradación del haz (s)
 t=900/deltat;  %Tiempo total de la simulación
 tt=240/deltat; %Tiempo de recogida de datos total
 pps=1;         %protones/segundo
-Zn_fraction = 0.15;
+Zn_fraction = 0.150;
 MeVJ=1.6e-13;
 %% Composiciones
 
@@ -72,8 +72,10 @@ rho_bone_A = (1-Zn_fraction)*AvNmbr*rho_bone/sum(Comp_bone.*W_ele);  % atoms/cm3
 rho_adipose_A = (1-Zn_fraction)*AvNmbr*rho_adipose/sum(Comp_adipose.*W_ele);  % atoms/cm3
 rho_PMMA_A = (1-Zn_fraction)*AvNmbr*rho_PMMA/sum(Comp_PMMA_w.*W_ele);  % atoms/cm3
 %rho_PMMA_A = AvNmbr*rho_PMMA/PMMA_Molar;  % atoms/cm3
-rho_w_A =  (1-Zn_fraction)*rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
-rho_w18_A =  Zn_fraction *rho_w18 * AvNmbr / waterMolecularWeight18; % molecules / cm3
+%rho_w_A =  (1-Zn_fraction)*rho_w * AvNmbr / waterMolecularWeight; % molecules / cm3
+%rho_w18_A =  Zn_fraction *rho_w18 * AvNmbr / waterMolecularWeight18; % molecules / cm3
+rho_w_A =  (1-Zn_fraction)*rho_w * AvNmbr / sum(Comp_water.*W_ele); % molecules / cm3
+rho_w18_A =  (Zn_fraction)*rho_w18 * AvNmbr / sum(Comp_water_Zn.*W_ele); % molecules / cm3
 ZnAtomicWeight = 38; % g/mol
 rho_Zn_A = Zn_fraction * rho_Zn * AvNmbr / waterMolecularWeight18; % molecules / cm3
 
@@ -82,7 +84,7 @@ rho_Zn_A = Zn_fraction * rho_Zn * AvNmbr / waterMolecularWeight18; % molecules /
 %Calculamos la densidad de cada isótopo multiplicando por su peso y su
 %abundancia. Se hace para cada material bone(b) tissue(t) PMMA(p)
 %adipose(a) water ()
-rho_O16_A = rho_w_A * Comp_water_Zn(4)* O16_ab ; % atoms/cm3
+rho_O16_A = rho_w_A * Comp_water_Zn(4)/(1-Zn_fraction)* O16_ab ; % atoms/cm3
 rho_O18_A = rho_w18_A * 0.33;
 rho_O18_At = rho_tissue_A * Comp_water_Zn(7);
 rho_O18_Ab = rho_bone_A * Comp_water_Zn(7);
@@ -272,6 +274,9 @@ for i=1:(numel(x)-1)
     S_w = max(0,1000*S_w_F(currentE*1000)); % MeV/(g/cm2)
     S_iw = max(0,1000*S_Zn_F(currentE*1000)); % MeV/(g/cm2) 
     
+    S_w18 = max(0,1000*S_w18_F(currentE*1000)); % MeV/(g/cm2)
+    S_iw18 = max(0,1000*S_Zn_F(currentE*1000)); % MeV/(g/cm2) 
+    
     S_t = max(0,1000*S_t_F(currentEt*1000)); % MeV/(g/cm2)
     S_it = max(0,1000*S_w_F(currentEt*1000));
     
@@ -285,7 +290,7 @@ for i=1:(numel(x)-1)
     S_ip = max(0,1000*S_w_F(currentEp*1000));
     
     %Multiplicamospor la densidad al poder de frenado
-    S1 = (S_w*rho_w); % MeV/cm
+    S1 = (S_w*rho_w);%*(1-Zn_fraction)+S_w18*rho_w18*Zn_fraction; % MeV/cm
     S1t = (S_t*rho_tissue)*(1-Zn_fraction) + S_it*rho_w18*Zn_fraction; % MeV/cm
     S1b = (S_b*rho_bone)*(1-Zn_fraction) + S_ib*rho_w18*Zn_fraction; % MeV/cm
     S1a = (S_a*rho_adipose)*(1-Zn_fraction) + S_ia*rho_w18*Zn_fraction; % MeV/cm
@@ -626,6 +631,70 @@ for i=1:(numel(x)-1)
     
     
 end
+
+%%
+     row=2000;  col=201;
+     fin=fopen('Tot_Water.raw','r');
+     I=fread(fin,row*col,'single'); 
+     histo=reshape(I,row,col);
+     histo=histo/4.6606e+05;
+     
+     for i=2:201
+         Y_O16_O15s(i)=Y_O16_O15s(i)*sum(histo(:,i));
+         Y_O16_N13s(i)=Y_O16_N13s(i)*sum(histo(:,i));
+         Y_O16_C11s(i)=Y_O16_C11s(i)*sum(histo(:,i));
+         Y_O18_F18s(i)=Y_O18_F18s(i)*sum(histo(:,i));
+         
+         
+     end
+     
+     
+%% Fluencia
+for i=1:201
+         [f,g]=min(Ddep);
+         R0=g*dx;
+         z=dx*i;
+         sig=0.012*(R0)^(0.935);
+         beta=0.012; %cm-1
+         resr=R0-dx*i;
+         if resr >= 0 
+         Fl(i)=exp(-(resr-(R0-z))^2/(2*sig* 2));    
+ %        Fl(i)=1/(sqrt(2*3.1416)*sig)*(1+beta*resr)/(1+beta*R0)*exp(-(resr-(R0-z))^2/(2*sig* 2));
+         else
+         Fl(i)=0;
+             
+         end
+    
+    
+end
+         Fl=Fl/max(Fl);
+
+         Y_O16_O15s=Fl.*Y_O16_O15s;
+         Y_O16_N13s=Fl.*Y_O16_N13s;
+         Y_O16_C11s=Fl.*Y_O16_C11s;
+         Y_O18_F18s=Fl.*Y_O18_F18s;
+
+
+
+
+%%
+
+AA=zeros(200,5);
+AA(:,1)=linspace(1,200,200);
+AA(:,2)=Y_O16_O15s(2:201);
+AA(:,3)=Y_O16_N13s(2:201)/1000;
+AA(:,4)=Y_O16_C11s(2:201);
+AA(:,5)=Y_O18_F18s(2:201);
+AA(:,6)=Y_O16_O15s(2:201)+Y_O16_N13s(2:201)/1000+Y_O16_C11s(2:201)+Y_O18_F18s(2:201);
+
+%%
+plot(AA(:,1),Y_O16_O15s(2:201));
+hold on;
+plot(AA(:,1),Y_O16_N13s(2:201)/1000);
+plot(AA(:,1),Y_O16_C11s(2:201));
+plot(AA(:,1),Y_O18_F18s(2:201));
+%plot(AA(:,1),
+
 %% Calculo de unidades Dosis
 
 %Water

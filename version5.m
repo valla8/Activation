@@ -11,7 +11,7 @@ clear all;%close all;
 load('control2.mat');
 
 %PARAMETROS
-dx=0.5;      %Paso del intervalo (cm)
+dx=0.05;      %Paso del intervalo (cm)
 xref=10;       %Distancia que va a simular, poner un número acorde a la energia inicial.
 E0=100;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
@@ -271,11 +271,11 @@ for i=1:(numel(x)-1)
     sigma_C11_mean = 0.5 * (O16_C11_F(E1) + O16_C11_F(E2));
     sigma_N13_mean = 0.5 * (max(0,O16_N13_F(E1)) + max(0,O16_N13_F(E2)));
     sigma_O15_mean = 0.5 * (O16_O15_F(E1) + O16_O15_F(E2));
-    sigma_F18_mean = 0.5 * (O18_F18_F(E1) + O18_F18_F(E2));
+    %sigma_F18_mean = 0.5 * (O18_F18_F(E1) + O18_F18_F(E2));
     Y_O16_C11s(i) = rho_O16_A * sigma_C11_mean * 1e-24 * dx;
     Y_O16_N13s(i) = rho_O16_A * sigma_N13_mean * 1e-24 * dx;
-    Y_O16_O15s(i) = pps * rho_O16_A * sigma_O15_mean * 1e-24 * dx;
-    Y_O18_F18w(i) = rho_O16_A * sigma_F18_mean * 1e-24 * dx;
+    Y_O16_O15s(i) = rho_O16_A * sigma_O15_mean * 1e-24 * dx;
+    %Y_O18_F18w(i) = rho_O16_A * sigma_F18_mean * 1e-24 * dx;
     Y_PG_O16_C12_4w(i) = pps * rho_O16_A * sigma_PG_O16_4w * 1e-24 * dx;
     Y_PG_O16_O16_6w(i) = pps * rho_O16_A * sigma_PG_O16_6w * 1e-24 * dx;
     
@@ -405,6 +405,24 @@ for i=1:(numel(x)-1)
     
     
 end
+%%
+
+AA=zeros(200,6);
+AA(:,1)=linspace(1,200,200);
+AA(:,2)=Y_O16_O15s(1:200);
+AA(:,3)=Y_O16_N13s(1:200)/1000;
+AA(:,4)=Y_O16_C11s(1:200);
+%AA(:,5)=1000*Y_O18_F18w(1:200);
+AA(:,6)=Y_O16_O15s(1:200)+Y_O16_N13s(1:200)/1000+Y_O16_C11s(1:200);
+
+%%
+plot(AA(:,1),Y_O16_O15s(2:201));
+hold on;
+plot(AA(:,1),Y_O16_N13s(2:201)/1000);
+plot(AA(:,1),Y_O16_C11s(2:201));
+%plot(AA(:,1),1000*Y_O18_F18w(2:201));
+%plot(AA(:,1),
+
 
 %% Calculo de unidades Dosis
 

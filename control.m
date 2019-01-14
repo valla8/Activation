@@ -39,7 +39,7 @@ I127_Xem_CS=I127_Xem_CS./1000;
 
 Na23_Mg23_CS=Na23_Mg23_CS./1000;
 
-O18_F18_CS=O18_F18_CS/1000;
+
 
 % Vidas medias en s
 load('MeanLives.mat');
@@ -205,7 +205,7 @@ title('N14->C11 cross sections')
 figure
 hold off
 plot(N14_N13_E,N14_N13_CS,'bo'); hold on
-N14_N13_F = fit(N14_N13_E,N14_N13_CS,'smoothingspline','SmoothingParam',0.5)
+N14_N13_F = fit(N14_N13_E,N14_N13_CS,'smoothingspline','SmoothingParam',0.2)
 N14_N13_F.p.coefs(1,:) = [0 0 0 0]
 plot(Eval,N14_N13_F(Eval),'r-')
 axis([0 200 0 0.1]);
@@ -242,7 +242,7 @@ title('O16->C11 cross sections')
 figure
 hold off
 plot(O16_N13_E,O16_N13_CS,'bo'); hold on
-O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.999)
+O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.2)
 O16_N13_F.p.coefs(1,:) = [0 0 0 0];
 O16_N13_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O16_N13_F(Eval),'r-')
@@ -256,7 +256,7 @@ title('O16->N13 cross sections')
 figure
 hold off
 plot(O16_O15_E,O16_O15_CS,'bo'); hold on
-O16_O15_F = fit(O16_O15_E,O16_O15_CS,'smoothingspline','SmoothingParam',0.002)
+O16_O15_F = fit(O16_O15_E,O16_O15_CS,'smoothingspline','SmoothingParam',0.2)
 O16_O15_F.p.coefs(1,:) = [0 0 0 0];
 O16_O15_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O16_O15_F(Eval),'r-')
@@ -269,7 +269,7 @@ title('O16->O15 cross sections')
 figure
 hold off
 plot(O18_F18_E,O18_F18_CS,'bo'); hold on
-O18_F18_F = fit(O18_F18_E,O18_F18_CS,'smoothingspline','SmoothingParam',0.99)
+O18_F18_F = fit(O18_F18_E,O18_F18_CS,'smoothingspline','SmoothingParam',0.2)
 O18_F18_F.p.coefs(1,:) = [0 0 0 0];
 O18_F18_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O18_F18_F(Eval),'r-')
@@ -514,6 +514,9 @@ S_NaI_F.p.coefs(end,:) = [0 0 0 0];
 S_Carbon_F = fit(E_keV_carbon,S_Carbon,'smoothingspline','SmoothingParam',0.002)
 S_Carbon_F.p.coefs(1,:) = [0 0 0 0];
 S_Carbon_F.p.coefs(end,:) = [0 0 0 0];
+S_w18_F = fit(E_keV_w18,S_w18,'smoothingspline','SmoothingParam',0.002)
+S_w18_F.p.coefs(1,:) = [0 0 0 0];
+S_w18_F.p.coefs(end,:) = [0 0 0 0];
 loglog(E_keV,S_Zn_F(E_keV),'r-')
 hold on;
 % loglog(E_keV,S_Zn66,'ro')
@@ -535,8 +538,8 @@ loglog(E_keV_CsI,S_CsI,'mo')
 loglog(E_keV_CsI,S_CsI_F(E_keV_CsI),'m-')
 loglog(E_keV_NaI,S_NaI,'bo')
 loglog(E_keV_NaI,S_NaI_F(E_keV_NaI),'b-')
-loglog(E_keV_carbon,S_Carbon,'yo')
-loglog(E_keV_carbon,S_Carbon_F(E_keV_carbon),'y-')
+loglog(E_keV_w18,S_w18,'yo')
+loglog(E_keV_w18,S_w18_F(E_keV_w18),'y-')
 legend('Zn66 fit','Zn66 SRIM data', 'Water fit', 'Water SRIM data', 'Tissue fit', 'Tissue SRIM data','Bone fit', 'Bone data', 'Adipose data','Adipose fit','PMMA','fit PMMA', 'Iodo','fit Iodo','CsI','fit CsI','NaI','fir NaI');
 xlabel('Proton energy (MeV)');
 ylabel('Stopping power (MeV/(cm2/mg))');
