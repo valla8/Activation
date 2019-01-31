@@ -4,9 +4,6 @@
 
 %% Par?metros a modificar:
 clear all
-Zn_fraction = 0.1; % Fraccion de Zn (tanto por uno)
-dx = 0.1; % Espaciado de la malla (cm)
-E0 = 58; % Energ?a inicial del haz (MeV)
 
 %% Cargar datos
 % Secciones de EXFOR.
@@ -31,11 +28,11 @@ PG_N14_N14_1_CS=PG_N14_L1_CS./1000;
 PG_N14_N14_1_E=PG_N14_L1_E;
 PG_N14_N14_2_E=PG_N14_L2_E;
 
-I127_Xe127_CS=I127_Xe127_CS./1000;
-I127_Xe125_CS=I127_Xe125_CS./1000;
-I127_Xe123_CS=I127_Xe123_CS./1000;
-I127_Xe122_CS=I127_Xe122_CS./1000;
-I127_Xem_CS=I127_Xem_CS./1000;
+% I127_Xe127_CS=I127_Xe127_CS./1000;
+% I127_Xe125_CS=I127_Xe125_CS./1000;
+% I127_Xe123_CS=I127_Xe123_CS./1000;
+% I127_Xe122_CS=I127_Xe122_CS./1000;
+I127_Xem_CS=I127_Xem_CS*1000;
 
 Na23_Mg23_CS=Na23_Mg23_CS./1000;
 
@@ -229,7 +226,7 @@ title('N14->O14 cross sections')
 figure
 hold off
 plot(O16_C11_E,O16_C11_CS,'bo'); hold on
-O16_C11_F = fit(O16_C11_E,O16_C11_CS,'smoothingspline','SmoothingParam',0.1)
+O16_C11_F = fit(O16_C11_E,O16_C11_CS,'smoothingspline','SmoothingParam',0.999)
 O16_C11_F.p.coefs(1,:) = [0 0 0 0];
 O16_C11_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O16_C11_F(Eval),'r-')
@@ -239,10 +236,11 @@ ylabel('Cross section (barn)')
 title('O16->C11 cross sections')
 
 %% Fit secciones eficaces O16_N13
+O16_N13_CS=O16_N13_CS./1000;
 figure
 hold off
 plot(O16_N13_E,O16_N13_CS,'bo'); hold on
-O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.02)
+O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.999)
 O16_N13_F.p.coefs(1,:) = [0 0 0 0];
 O16_N13_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O16_N13_F(Eval),'r-')
@@ -256,7 +254,7 @@ title('O16->N13 cross sections')
 figure
 hold off
 plot(O16_O15_E,O16_O15_CS,'bo'); hold on
-O16_O15_F = fit(O16_O15_E,O16_O15_CS,'smoothingspline','SmoothingParam',0.2)
+O16_O15_F = fit(O16_O15_E,O16_O15_CS,'smoothingspline','SmoothingParam',0.999)
 O16_O15_F.p.coefs(1,:) = [0 0 0 0];
 O16_O15_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O16_O15_F(Eval),'r-')
@@ -439,6 +437,20 @@ xlabel('Proton energy (MeV)')
 ylabel('Cross section (barn)')
 title('Na23Mg23 cross sections')
 
+%% Fit K39-Ca39
+K39_Ca39_CS=K39_Ca39_CS/1000;
+figure
+hold off
+plot(K39_Ca39_E,K39_Ca39_CS,'bo'); hold on
+K39_Ca39_F = fit(K39_Ca39_E,K39_Ca39_CS,'smoothingspline','SmoothingParam',0.99)
+K39_Ca39_F.p.coefs(1,:) = [0 0 0 0];
+K39_Ca39_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,K39_Ca39_F(Eval),'r-')
+axis([0 50 0 0.1]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Na23Mg23 cross sections')
+
 %% Plot all (water)
 figure
 hold off
@@ -517,7 +529,25 @@ S_Carbon_F.p.coefs(end,:) = [0 0 0 0];
 S_w18_F = fit(E_keV_w18,S_w18,'smoothingspline','SmoothingParam',0.002)
 S_w18_F.p.coefs(1,:) = [0 0 0 0];
 S_w18_F.p.coefs(end,:) = [0 0 0 0];
+S_bet_F = fit(E_keV_bet,S_bet,'smoothingspline','SmoothingParam',0.002)
+S_bet_F.p.coefs(1,:) = [0 0 0 0];
+S_bet_F.p.coefs(end,:) = [0 0 0 0];
+S_bet2_F = fit(E_keV_bet2,S_bet2,'smoothingspline','SmoothingParam',0.002)
+S_bet2_F.p.coefs(1,:) = [0 0 0 0];
+S_bet2_F.p.coefs(end,:) = [0 0 0 0];
 loglog(E_keV,S_Zn_F(E_keV),'r-')
+S_NaCl_F = fit(E_kev_NaCl,S_NaCl,'smoothingspline','SmoothingParam',0.002)
+S_NaCl_F.p.coefs(1,:) = [0 0 0 0];
+S_NaCl_F.p.coefs(end,:) = [0 0 0 0];
+S_CaCl2_F = fit(E_kev_CaCl2,S_CaCl2,'smoothingspline','SmoothingParam',0.002)
+S_CaCl2_F.p.coefs(1,:) = [0 0 0 0];
+S_CaCl2_F.p.coefs(end,:) = [0 0 0 0];
+S_CaO_F = fit(E_kev_CaO,S_CaO,'smoothingspline','SmoothingParam',0.002)
+S_CaO_F.p.coefs(1,:) = [0 0 0 0];
+S_CaO_F.p.coefs(end,:) = [0 0 0 0];
+S_KCl_F = fit(E_kev_KCl,S_KCl,'smoothingspline','SmoothingParam',0.002)
+S_KCl_F.p.coefs(1,:) = [0 0 0 0];
+S_KCl_F.p.coefs(end,:) = [0 0 0 0];
 hold on;
 % loglog(E_keV,S_Zn66,'ro')
 % loglog(E_keV,S_w_F(E_keV),'b-')
