@@ -11,7 +11,7 @@ clear all;%close all;
 load('control2.mat');
 
 %PARAMETROS
-dx=0.05;      %Paso del intervalo (cm)
+dx=0.1;      %Paso del intervalo (cm)
 xref=10;       %Distancia que va a simular, poner un número acorde a la energia inicial.
 E0=100;        %Energía inicial del haz
 deltat=1;      %Inervalo de tiempo de las simulaciones
@@ -21,7 +21,7 @@ tt=240/deltat; %Tiempo de recogida de datos total
 pps=1e5; %protones/segundo
 MeVJ=1.6e-13;
 landa_F18 =  log(2) / 6586;
-O18_fraction=0.30;
+O18_fraction=0.10;
 %% Calcular (sin straggling)
 
 AvNmbr = 6.022140857e23;
@@ -151,37 +151,37 @@ Fl2=zeros(size(x));
     sig=sqrt(sig2);
     
      for i=1:length(x)
-
-        for k=1:length(x)
-
-         z=dx*i;
-         beta=0.012; %cm-1
-         resr=R0-dx*k;
-         if resr >= 0 
- %        Fl(i)=exp(-(resr-(R0-z))^2/(2*sig* 2));    
-         Fl(k)=1/(19.9706*sqrt(2*3.1416)*sig)*(1+beta*resr)/(1+beta*R0)*exp(-(resr-(R0-z))^2/(2*sig2));
- %        Fl(k)=1/(22.5635*sqrt(2*3.1416)*sig)*(1+beta*resr)/(1+beta*R0)*exp(-(resr-(R0-z))^2/(2*sig2));
- %       Fl(k)=(1+beta*resr)/(1+beta*R0)*exp(-(resr-(R0-z))^2/(2*sig2));
-         else
-         Fl(k)=0; 
-         end
-         
-       
-         Fl2(i)=Fl2(i)+Fl(k);
+    Fl=1;
+%         for k=1:length(x)
+% 
+%          z=dx*i;
+%          beta=0.012; %cm-1
+%          resr=R0-dx*k;
+%          if resr >= 0 
+%  %        Fl(i)=exp(-(resr-(R0-z))^2/(2*sig* 2));    
+%          Fl(k)=1/(19.9706*sqrt(2*3.1416)*sig)*(1+beta*resr)/(1+beta*R0)*exp(-(resr-(R0-z))^2/(2*sig2));
+%  %        Fl(k)=1/(22.5635*sqrt(2*3.1416)*sig)*(1+beta*resr)/(1+beta*R0)*exp(-(resr-(R0-z))^2/(2*sig2));
+%  %       Fl(k)=(1+beta*resr)/(1+beta*R0)*exp(-(resr-(R0-z))^2/(2*sig2));
+%          else
+%          Fl(k)=0; 
+%          end
+%          
+%        
+%          Fl2(i)=Fl2(i)+Fl(k);
          
          
     
     % Water (full + simplified)
-    sigma_C11_mean = max(0,O16_C11_F(E(k)));
-    sigma_N13_mean = max(0,O16_N13_F(E(k))) ;
-    sigma_O15_mean = max(0,O16_O15_F(E(k)));
-    sigma_F18_mean = max(0,O18_F18_F(E(k)));
-    Y_O16_C11s(i) = Y_O16_C11s(i) + Fl(k) * rho_O16_A * sigma_C11_mean * 1e-24 * dx;
-    Y_O16_N13s(i) = Y_O16_N13s(i) + Fl(k) * rho_O16_A * sigma_N13_mean * 1e-24 * dx;
-    Y_O16_O15s(i) = Y_O16_O15s(i) + Fl(k) * rho_O16_A * sigma_O15_mean * 1e-24 * dx;
-    Y_O18_F18w(i) = Y_O18_F18w(i) + Fl(k) * rho_O18_A * sigma_F18_mean * 1e-24 * dx;
+    sigma_C11_mean = max(0,O16_C11_F(E(i)));
+    sigma_N13_mean = max(0,O16_N13_F(E(i))) ;
+    sigma_O15_mean = max(0,O16_O15_F(E(i)));
+    sigma_F18_mean = max(0,O18_F18_F(E(i)));
+    Y_O16_C11s(i) = Y_O16_C11s(i) +  rho_O16_A * sigma_C11_mean * 1e-24 * dx;
+    Y_O16_N13s(i) = Y_O16_N13s(i) +  rho_O16_A * sigma_N13_mean * 1e-24 * dx;
+    Y_O16_O15s(i) = Y_O16_O15s(i) +  rho_O16_A * sigma_O15_mean * 1e-24 * dx;
+    Y_O18_F18w(i) = Y_O18_F18w(i) +   rho_O18_A * sigma_F18_mean * 1e-24 * dx;
     
-    EE(i) = EE(i) + Fl(k) * Ddep(k);
+    EE(i) = EE(i) ;
     
     
     
@@ -190,7 +190,7 @@ Fl2=zeros(size(x));
 
     
     
-end
+%end
 %%
 
 AA=zeros(length(x),6);
@@ -210,7 +210,7 @@ AA(:,6)=Y_O16_O15s+Y_O16_N13s/1000+Y_O16_C11s+Y_O18_F18w;
 % %AA(:,5)=1000*Y_O18_F18w(1:200);
 % AA(:,6)=Y_O16_O15s(2:201)+Y_O16_N13s(2:201)/1000+Y_O16_C11s(2:201);
 %%
-plot(AA(:,1),Y_O16_O15s);
+plot(AA(:,1),10e5*Y_O16_O15s);
 hold on;
 plot(AA(:,1),Y_O16_N13s/1000);
 plot(AA(:,1),Y_O16_C11s);

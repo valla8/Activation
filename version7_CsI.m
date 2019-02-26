@@ -11,14 +11,15 @@ clear all;%close all;
 load('control2.mat');
 
 %PARAMETROS
-dx=0.002;      %Paso del intervalo (cm)
-xref=1.0;       %Distancia que va a simular, poner un número acorde a la energia inicial.
-E0=9;        %Energía inicial del haz
+dx=0.001;      %Paso del intervalo (cm)
+xref=4.0;       %Distancia que va a simular, poner un número acorde a la energia inicial.
+E0=100;        %Energía inicial del haz
 
-tt=240/deltat; %Tiempo de recogida de datos total
-pps=5e10; %protones/segundo
+pps=6.25e9; %protones/segundo
 MeVJ=1.6e-13;
 landa_F18 =  log(2) / 6586;
+landa_Ba133 = log(2) / 3.327e8;
+landa_Ba133m = log(2) / 140148;
 O18_fraction=0.00;
 %% Calcular (sin straggling)
 
@@ -131,10 +132,12 @@ end
     Y_127I_122Xe = zeros(size(x));
     Y_127I_123Xe = zeros(size(x));
     Y_127Xem = zeros(size(x));
+    Y_133Cs_133Ba = zeros(size(x));
+    Y_133Cs_133Bam = zeros(size(x));
     
-
+    CCC=0;
     
-     for i=1:length(x)
+     for i=1:length(x)-1
 
      
          
@@ -143,11 +146,17 @@ end
 
    
 
-     Y_127Xem(i) = Y_127Xem(i)  +  rho_Cs_A * max(0,I127_Xem_F(E(i))) * 1e-24 * dx;
-     Y_127I_127Xe(i) = Y_127I_127Xe(i)  +  rho_Cs_A * max(0,I127_Xe127_F(E(i))) * 1e-24 * dx;
-     Y_127I_125Xe(i) = Y_127I_125Xe(i)  +  rho_Cs_A * max(0,I127_Xe125_F(E(i))) * 1e-24 * dx;
-     Y_127I_123Xe(i) = Y_127I_123Xe(i)  +  rho_Cs_A * max(0,I127_Xe123_F(E(i))) * 1e-24 * dx;
-     Y_127I_122Xe(i) = Y_127I_122Xe(i)  +  rho_Cs_A * max(0,I127_Xe122_F(E(i))) * 1e-24 * dx;
+%     Y_127Xem(i) = Y_127Xem(i)  +  rho_I_A * max(0,(I127_Xem_F(E(i))+I127_Xem_F(E(i+1)))/2) * 1e-24 * dx;
+     Y_127Xem(i) = Y_127Xem(i)  +  rho_I_A * max(0,1e3*(I127_Xe127_F(E(i))+I127_Xe127_F(E(i+1)))/4) * 1e-24 * dx;
+     Y_127I_127Xe(i) = Y_127I_127Xe(i)  +  rho_I_A * max(0,1000*I127_Xe127_F(E(i))) * 1e-24 * dx;
+        if i<length(x)
+        CCC=CCC+(-E(i+1)+E(i))*max(0,I127_Xem_F(E(i)));
+        end
+     Y_127I_125Xe(i) = Y_127I_125Xe(i)  +  rho_I_A * max(0,1e3*I127_Xe125_F(E(i))) * 1e-24 * dx;
+     Y_127I_123Xe(i) = Y_127I_123Xe(i)  +  rho_I_A * max(0,1e3*I127_Xe123_F(E(i))) * 1e-24 * dx;
+     Y_127I_122Xe(i) = Y_127I_122Xe(i)  +  rho_I_A * max(0,1e3*I127_Xe122_F(E(i))) * 1e-24 * dx;
+     Y_133Cs_133Ba(i) = Y_133Cs_133Ba(i)  +  rho_Cs_A * max(0,Cs133_Ba133_F(E(i))) * 1e-24 * dx;
+     Y_133Cs_133Bam(i) = Y_133Cs_133Bam(i)  +  rho_Cs_A * max(0,Cs133_Ba133m_F(E(i))) * 1e-24 * dx;
     
 %     EE(i) = EE(i) + Fl(k) * Ddep(k);
     
@@ -161,6 +170,8 @@ end
     Y_Xe125=Y_127I_125Xe;
     Y_Xe123=Y_127I_123Xe;
     Y_Xe122=Y_127I_122Xe;
+    Y_Ba133 = Y_133Cs_133Ba;
+    Y_Ba133m = Y_133Cs_133Bam;
 
     
     
@@ -173,11 +184,13 @@ end
 figure
 hold on
 plot(E,I127_Xem_F(E))
-plot(E,I127_Xe122_F(E))
-plot(E,I127_Xe123_F(E))
-plot(E,I127_Xe125_F(E))
+plot(E,1e3*I127_Xe122_F(E))
+plot(E,1e3*I127_Xe123_F(E))
+plot(E,1e3*I127_Xe125_F(E))
 plot(E,10e2*I127_Xe127_F(E))
-legend('127Xem','122Xe','123Xe','125Xe','127Xe')
+plot(E,Cs133_Ba133_F(E))
+plot(E,Cs133_Ba133m_F(E))
+legend('127Xem','122Xe','123Xe','125Xe','127Xe','133Ba','133mBa')
 
 
 
@@ -186,16 +199,19 @@ legend('127Xem','122Xe','123Xe','125Xe','127Xe')
 figure
 hold on
 
+plot(x,Ddep/1e5,'k')
  plot(x,Y_127Xem)
  plot(x,Y_127I_122Xe)
  plot(x,Y_127I_123Xe)
  plot(x,Y_127I_125Xe)
  plot(x,Y_127I_127Xe)
-legend('127Xem','122Xe','123Xe','125Xe','127Xe')
+ plot(x,Y_133Cs_133Ba)
+ plot(x,Y_133Cs_133Bam)
+legend('Dose','127Xem','122Xe','123Xe','125Xe','127Xe','133Ba','133mBa')
 
  %% PET activity (t) para un cierto número de protones que llegan simultaneamente
 % %Valores para los que se pretende calcular la actividad
-calcTimes = [0 30 60 120 360 ]; % s
+calcTimes = [0 30 60 120 3600 ]; % s
 
 %Definimos las variables
 act_Xe127m = zeros(numel(calcTimes), numel(x));
@@ -203,6 +219,9 @@ act_Xe127 = zeros(numel(calcTimes), numel(x));
 act_Xe125 = zeros(numel(calcTimes), numel(x));
 act_Xe123 = zeros(numel(calcTimes), numel(x));
 act_Xe122 = zeros(numel(calcTimes), numel(x));
+act_Ba133 = zeros(numel(calcTimes), numel(x));
+act_Ba133m = zeros(numel(calcTimes), numel(x));
+
 
 nC=1/1.6e-10;
 
@@ -219,11 +238,13 @@ for i=1:numel(calcTimes)
     act_Xe125(i,:) = deltat * landa_Xe125 .* Y_Xe125 .* exp(- landa_Xe125 * calcTimes(i));
     act_Xe123(i,:) = deltat * landa_Xe123 .* Y_Xe123 .* exp(- landa_Xe123 * calcTimes(i));
     act_Xe122(i,:) = deltat * landa_Xe122 .* Y_Xe122 .* exp(- landa_Xe122 * calcTimes(i));
+    act_Ba133(i,:) = deltat * landa_Ba133 .* Y_Ba133 .* exp(- landa_Ba133 * calcTimes(i));
+    act_Ba133m(i,:) = deltat * landa_Ba133m .* Y_Ba133m .* exp(- landa_Ba133m * calcTimes(i));
     
 
    
 end
-act_total = (act_Xe127m+act_Xe125+act_Xe123+act_Xe122);
+act_total = (act_Xe127m+act_Xe125+act_Xe123+act_Xe122+act_Ba133);
 %act_totalp = (act_C11p + act_C10p + act_N13p + act_O15p);
 yyaxis left
 plot(x,act_total(1,:),'k')
@@ -255,6 +276,8 @@ act_Xe127t = zeros(1,360);
 act_Xe125t = zeros(1,360);
 act_Xe123t = zeros(1,360);
 act_Xe122t = zeros(1,360);
+act_Ba133t = zeros(1,360);
+act_Ba133mt = zeros(1,360);
 TT=[1:360];
 
 for i=1:360
@@ -265,6 +288,8 @@ for i=1:360
     act_Xe125t(i) =  landa_Xe125 .* sum(Y_Xe125) .* exp(- landa_Xe125 * i);
     act_Xe123t(i) =  landa_Xe123 .* sum(Y_Xe123) .* exp(- landa_Xe123 * i);
     act_Xe122t(i) =  landa_Xe122 .* sum(Y_Xe122) .* exp(- landa_Xe123 * i);
+    act_Ba133t(i) =  landa_Ba133 .* sum(Y_Ba133) .* exp(- landa_Ba133 * i);
+    act_Ba133mt(i) =  landa_Ba133m .* sum(Y_Ba133m) .* exp(- landa_Ba133m * i);
     
 end
 
@@ -275,7 +300,9 @@ plot(TT,act_Xe127t)
 plot(TT,act_Xe125t)
 plot(TT,act_Xe123t)
 plot(TT,act_Xe122t)
-legend('127Xem','127Xe')
+plot(TT,act_Ba133t)
+plot(TT,act_Ba133mt)
+legend('127Xem','127Xe','Ba133','Ba133m')
 
 
 %% Actividad con el tiempo
@@ -285,8 +312,8 @@ legend('127Xem','127Xe')
 %pulsos de un sincrotrón). Los parámetros de tiempo de irradiación y de
 %decaimiento se introducen al principio
 deltat=1;      %Inervalo de tiempo de las simulaciones
-a=500/deltat;  %Tiempo de irradación del haz (s)
-t=900/deltat;  %Tiempo total de la simulación
+a=600/deltat;  %Tiempo de irradación del haz (s)
+t=600/deltat;  %Tiempo total de la simulación
 
 
 c=1;
@@ -295,6 +322,8 @@ temp_Xe127=zeros(t+1,numel(x));
 temp_Xe125=zeros(t+1,numel(x));
 temp_Xe123=zeros(t+1,numel(x));
 temp_Xe122=zeros(t+1,numel(x));
+temp_Ba133=zeros(t+1,numel(x));
+temp_Ba133m=zeros(t+1,numel(x));
 
 temp_total2=zeros(t+1,1);
 temp_parcXem127=zeros(t+1,1);
@@ -302,6 +331,8 @@ temp_parcXe127=zeros(t+1,1);
 temp_parcXe125=zeros(t+1,1);
 temp_parcXe123=zeros(t+1,1);
 temp_parcXe122=zeros(t+1,1);
+temp_parcBa133=zeros(t+1,1);
+temp_parcBa133m=zeros(t+1,1);
 
 %CALCULO
 %Para hacer el calculo suponemos que cada intervalod de tiempo llegan un
@@ -312,10 +343,13 @@ temp_parcXe122=zeros(t+1,1);
 %llegan.
 d=0
 buff=0
-buff1=sum(Y_127Xem);
+f=0;
+buff1=0.9*sum(Y_127Xem);
+tau=log(2)/landa_Xe127m
 for i=1:t+1
     b=i;
-    if buff<buff1
+%    if buff<buff1
+    if i<tau*2.5/deltat
            d=d+1;
     %if i<a
         for j=1:b
@@ -325,21 +359,31 @@ for i=1:t+1
             temp_Xe125(i,:)=temp_Xe125(i,:)+pps*deltat * Y_Xe125.*landa_Xe125.*exp(-landa_Xe125*(deltat*j-deltat*1));
             temp_Xe123(i,:)=temp_Xe123(i,:)+pps*deltat * Y_Xe123.*landa_Xe123.*exp(-landa_Xe125*(deltat*j-deltat*1));
             temp_Xe122(i,:)=temp_Xe122(i,:)+pps*deltat * Y_Xe122.*landa_Xe122.*exp(-landa_Xe125*(deltat*j-deltat*1));
+            temp_Ba133(i,:)=temp_Ba133(i,:)+pps*deltat * Y_Ba133.*landa_Ba133.*exp(-landa_Ba133*(deltat*j-deltat*1));
+            temp_Ba133m(i,:)=temp_Ba133m(i,:)+pps*deltat * Y_Ba133m.*landa_Ba133m.*exp(-landa_Ba133m*(deltat*j-deltat*1));
            buff=sum(temp_Xem127(i,:))/pps;
             
         end
     else
-            for j=1:a;
+            for j=1:d;
                 
             temp_Xem127(i,:)=temp_Xem127(i,:)+pps*deltat *Y_127Xem.*landa_Xe127m.*exp(-landa_Xe127m*(deltat*j-deltat*1+deltat*c));
-             temp_Xe127(i,:)=temp_Xe127(i,:)+pps*deltat *Y_Xe127.*landa_Xe127.*exp(-landa_Xe127m*(deltat*j-deltat*1+deltat*c));
+             temp_Xe127(i,:)=temp_Xe127(i,:)+pps*deltat *Y_Xe127.*landa_Xe127.*exp(-landa_Xe127*(deltat*j-deltat*1+deltat*c));
             temp_Xe125(i,:)=temp_Xe125(i,:)+pps*deltat *Y_Xe125.*landa_Xe125.*exp(-landa_Xe125*(deltat*j-deltat*1+deltat*c));
             temp_Xe123(i,:)=temp_Xe123(i,:)+pps*deltat *Y_Xe123.*landa_Xe123.*exp(-landa_Xe123*(deltat*j-deltat*1+deltat*c));
             temp_Xe122(i,:)=temp_Xe122(i,:)+pps*deltat *Y_Xe122.*landa_Xe122.*exp(-landa_Xe122*(deltat*j-deltat*1+deltat*c));
+            temp_Ba133(i,:)=temp_Ba133(i,:)+pps*deltat *Y_Ba133.*landa_Ba133.*exp(-landa_Ba133*(deltat*j-deltat*1+deltat*c));
+            temp_Ba133m(i,:)=temp_Ba133m(i,:)+pps*deltat *Y_Ba133m.*landa_Ba133m.*exp(-landa_Ba133m*(deltat*j-deltat*1+deltat*c));
 
-            
+
+            end
+            if (sum(temp_Xem127(i,:))<0.1*sum(temp_Xem127(d,:)) && f<1)
+                f=i
+                sum(temp_Xem127(i,:))
+                0.1*sum(temp_Xem127(d,:))
             end
             c=c+1;
+  %          sum(temp_Ba133m(i,:))
     end
            
             
@@ -349,18 +393,20 @@ for i=1:t+1
             
             
      
-    temp_total2(i)=sum(sum(temp_Xe127(i,:))+sum(temp_Xe125(i,:))+sum(temp_Xe123(i,:))+sum(temp_Xe122(i,:))+sum(temp_Xem127(i,:)));
+    temp_total2(i)=sum(sum(temp_Ba133(i,:))+sum(temp_Xe127(i,:))+sum(temp_Xe125(i,:))+sum(temp_Xe123(i,:))+sum(temp_Xe122(i,:))+sum(temp_Xem127(i,:)));
     temp_parcXem127(i)=sum(temp_Xem127(i,:));
     temp_parcXe127(i)=sum(temp_Xe127(i,:));
     temp_parcXe125(i)=sum(temp_Xe125(i,:));
     temp_parcXe123(i)=sum(temp_Xe123(i,:));
     temp_parcXe122(i)=sum(temp_Xe122(i,:));
+    temp_parcBa133(i)=sum(temp_Ba133(i,:));
+    temp_parcBa133m(i)=sum(temp_Ba133m(i,:));
 
 
     
     
 end
-    temp_total=temp_Xe127+temp_Xe125+temp_Xe123+temp_Xe122+temp_Xem127;
+    temp_total=temp_Xe127+temp_Xe125+temp_Xe123+temp_Xe122+temp_Xem127+temp_Ba133+temp_Ba133m;
     
 
 
@@ -371,253 +417,83 @@ end
     set(gca, 'FontSize', 16); 
     T=(0:t);
     hold on;
-    plot(T*deltat,(0.01*0.38*temp_parcXem127)/1000,'r');
-    plot(T*deltat,(0.015*0.68*temp_parcXem127)/1000,'g');
+%    tottot=0.003122*0.38*temp_parcXem127+0.00285*0.68*temp_parcXem127+0.002535*0.1769*temp_parcBa133m;
+%    plot(T*deltat,tottot/1000,'k','linewidth',2);
+%    plot(T*deltat,(0.003122*0.38*temp_parcXem127)/1000,'r','linewidth',2);
+%    plot(T*deltat,(0.00285*0.68*temp_parcXem127)/1000,'g','linewidth',2);
+    plot(T*deltat,(temp_parcXem127)/1000,'r');
+    plot(T*deltat,(temp_parcXem127)/1000,'g');
+    plot(T*deltat,(temp_parcBa133m)/1000,'b')
+    plot(T*deltat,(temp_parcXe127)/1000,'k')
     grid on
-    title('Actividad total en a lo largo del tiempo');
+    title('Actividad/nC ');
     xlabel('Tiempo (s)');
     ylabel('Actividad (kBq)');
-    legend('Xe127*-172 keV','Xe127*-124 keV');
+    legend('Total','Xe127*-172 keV','Xe127*-124 keV','Ba133*-275 keV','127xe');
  %   legend('Xe127*-172 keV','Xe127*-124 keV','Xe127','Xe125','Xe125','Xe123','Xe122');
 %    axis([0 t*deltat 0 (0.68*max(temp_total2(:,1)/1000)+0.2*max(temp_total2(:,1)/1000))]); 
 %     
+max(temp_parcXem127)/1000
+max(temp_parcXe127)/1000
+max(temp_parcXe125)/1000
+max(temp_parcXe123)/1000
+max(temp_parcXe122)/1000
+%% Actvidad 133Ba
+    figure
+    T=linspace(1,1.2614e9,40);
+    act_Ba133t2=zeros(1,40);
+    for i=1:(length(T))
 
+
+    act_Ba133t2(i) =  landa_Ba133 .* sum(Y_Ba133) * pps * d .* exp(- landa_Ba133 * T(i));
+    end
+    
+    
+    TT=T/(24*365*3600);
+    plot(TT,0.62*act_Ba133t2,'r','linewidth',2)
+    title('Actividad residual CsI')
+    xlabel('Tiempo (años)')
+    ylabel('Actividad (Bq)')
+    legend('133Ba-356 keV')
+
+%% Actvidad 133mBa
+    figure
+    T=linspace(1,432000,120);
+    act_Ba133mt2=zeros(1,120);
+    for i=1:(length(T))
+
+    act_Ba133mt2(i) =  landa_Ba133m .* sum(Y_Ba133m) * pps * d .* exp(- landa_Ba133m * T(i));
+    
+    end
+    
+    
+    TT=T/(3600);
+    plot(TT,0.1769*act_Ba133mt2,'r','linewidth',2)
+    title('Actividad residual CsI')
+    xlabel('Tiempo (horas)')
+    ylabel('Actividad (Bq)')
+    legend('133*Ba-275.925 keV')
+
+
+
+%% Actvidad 133mBa
+    figure
+    T=linspace(1,10368000,120);
+    act_Xe127t2=zeros(1,120);
+    for i=1:(length(T))
+
+    act_Xe127t2(i) =  landa_Xe127 .* sum(Y_Xe127) * pps * d .* exp(- landa_Xe127 * T(i));
+    
+    end
+    
+    
+    TT=T/(24*3600);
+    plot(TT,0.62*act_Xe127t2,'r','linewidth',2)
+    title('Actividad residual CsI')
+    xlabel('Tiempo (dias)')
+    ylabel('Actividad (Bq)')
+    legend('127Xe-356 keV')
 % 
-% %% Actividad total en función de tiempo
-% %Igual que el apartado anterior pero con otra fórmula. Es una comprobación
-% %de que estaba bien hecho.
-% cont1=0;
-% cont2=0;
-% c=1;
-% int_totalp2=zeros(t+1,1);
-% int_totalt2=zeros(t+1,1);
-% int_parcC11t=zeros(t+1,1);
-% int_parcO15t=zeros(t+1,1);
-% int_parcN13t=zeros(t+1,1);
-% int_parcC10t=zeros(t+1,1);
-% int_parcC11p=zeros(t+1,1);
-% int_parcO15p=zeros(t+1,1);
-% int_parcN13p=zeros(t+1,1);
-% int_parcC10p=zeros(t+1,1);
-% int_C11t=zeros(t+1,numel(x));
-% int_O15t=zeros(t+1,numel(x));
-% int_N13t=zeros(t+1,numel(x));
-% int_C10t=zeros(t+1,numel(x));
-% int_C11p=zeros(t+1,numel(x));
-% int_O15p=zeros(t+1,numel(x));
-% int_N13p=zeros(t+1,numel(x));
-% int_C10p=zeros(t+1,numel(x));
-% for i=2:t+1;
-%     b=i;
-%     if i<a
-%         cont1=cont1+1;
-%         for j=1:b;
-%             
-%             %Tissue
-%             int_C10t(i,:)=int_C10t(i,:)+deltat*Y_C10t.*(-exp(-landa_C10*(deltat*j))-exp(-landa_C10*(deltat*j-deltat*1)));
-%             int_C11t(i,:)=int_C11t(i,:)+deltat*Y_C11t.*(-exp(-landa_C11*(deltat*j))+exp(-landa_C11*(deltat*j-deltat*1)));
-%             int_N13t(i,:)=int_N13t(i,:)+deltat*Y_N13t.*(-exp(-landa_N13*(deltat*j))+exp(-landa_N13*(deltat*j-deltat*1)));;
-%             int_O15t(i,:)=int_O15t(i,:)+deltat*Y_O15t.*(-exp(-landa_O15*(deltat*j))+exp(-landa_O15*(deltat*j-deltat*1)));;
-%             
-%             %PMMA
-%             int_C10p(i,:)=int_C10p(i,:)+deltat*Y_C10p.*(-exp(-landa_C10*(deltat*j))+exp(-landa_C10*(deltat*j-deltat*1)));
-%             int_C11p(i,:)=int_C11p(i,:)+deltat*Y_C11p.*(-exp(-landa_C11*(deltat*j))+exp(-landa_C11*(deltat*j-deltat*1)));
-%             int_N13p(i,:)=int_N13p(i,:)+deltat*Y_N13p.*(-exp(-landa_N13*(deltat*j))+exp(-landa_N13*(deltat*j-deltat*1)));
-%             int_O15p(i,:)=int_O15p(i,:)+deltat*Y_O15p.*(-exp(-landa_O15*(deltat*j))+exp(-landa_O15*(deltat*j-deltat*1)));
-%            
-%         end
-% 
-%     else
-%        
-%            cont2=cont2+1;
-%         for j=1:a;
-%             
-%             %Tissue
-%             int_C10t(i,:)=int_C10t(i,:)+deltat*Y_C10t.*(-exp(-landa_C10*(deltat*j+deltat*c))+exp(-landa_C10*(deltat*j-deltat*1+deltat*c)));
-%             int_C11t(i,:)=int_C11t(i,:)+deltat*Y_C11t.*(-exp(-landa_C11*(deltat*j+deltat*c))+exp(-landa_C11*(deltat*j-deltat*1+deltat*c)));
-%             int_N13t(i,:)=int_N13t(i,:)+deltat*Y_N13t.*(-exp(-landa_N13*(deltat*j+deltat*c))+exp(-landa_N13*(deltat*j-deltat*1+deltat*c)));
-%             int_O15t(i,:)=int_O15t(i,:)+deltat*Y_O15t.*(-exp(-landa_O15*(deltat*j+deltat*c))+exp(-landa_O15*(deltat*j-deltat*1+deltat*c)));
-%             
-%             %PMMA
-%             int_C10p(i,:)=int_C10p(i,:)+deltat*Y_C10p.*(-exp(-landa_C10*(deltat*j+deltat*c))+exp(-landa_C10*(deltat*j-deltat*1+deltat*c)));
-%             int_C11p(i,:)=int_C11p(i,:)+deltat*Y_C11p.*(-exp(-landa_C11*(deltat*j+deltat*c))+exp(-landa_C11*(deltat*j-deltat*1+deltat*c)));
-%             int_N13p(i,:)=int_N13p(i,:)+deltat*Y_N13p.*(-exp(-landa_N13*(deltat*j+deltat*c))+exp(-landa_N13*(deltat*j-deltat*1+deltat*c)));
-%             int_O15p(i,:)=int_O15p(i,:)+deltat*Y_O15p.*(-exp(-landa_O15*(deltat*j+deltat*c))+exp(-landa_O15*(deltat*j-deltat*1+deltat*c)));
-%            
-%         end
-%             c=c+1;
-%             
-% 
-%       
-%     end
-%            
-%     int_totalt2(i)=sum(int_C10t(i,:))+sum(int_C11t(i,:))+sum(int_N13t(i,:))+sum(int_O15t(i,:));
-%     int_parcC11t(i)=sum(int_C11t(i,:));
-%     int_parcO15t(i)=sum(int_O15t(i,:));
-%     int_parcN13t(i)=sum(int_N13t(i,:));
-%     int_parcC10t(i)=sum(int_C10t(i,:));
-%     
-%     int_totalp2(i)=sum(int_C10p(i,:))+sum(int_C11p(i,:))+sum(int_N13p(i,:))+sum(int_O15p(i,:));
-%     int_parcC11p(i)=sum(int_C11p(i,:));
-%     int_parcO15p(i)=sum(int_O15p(i,:));
-%     int_parcN13p(i)=sum(int_N13p(i,:));
-%     int_parcC10p(i)=sum(int_C10p(i,:));
-% 
-%     
-% end
-% 
-% %% Actividadd total 2
-% 
-%     figure;
-%     plot(T*deltat,(int_totalp2(:,1)));
-%     hold on
-%     plot(T*deltat,int_parcO15p(:,1))
-%     plot(T*deltat,int_parcC11p(:,1))
-%     plot(T*deltat,int_parcC10p(:,1))
-%     plot(T*deltat,int_parcN13p(:,1))
-%     title('Actividad total en a lo largo del tiempo PMMA');
-%     xlabel('Tiempo (s)')
-%     ylabel('Beta+ emitters / s ');
-%     legend('Actividad total','O15','C11','C10','N13','Location', 'northeast');
-%     set(gca, 'FontSize', 16) 
-%     axis([0 t*deltat 0 (max(int_totalp2(:,1))+0.2*max(int_totalp2(:,1)))]);
-% 
-%     
-%     
-% %% Actividad durante Bean-On
-% %Aquí calculamos la cantidad de pares de 511 keV que se producen durante la
-% %irradiación y los que ocurren después en función del espacio, hasta el valor del tiempo en
-% %segundos que hay de la variable de abajo
-% 
-% beam=zeros(1,length(x));
-% beam_onp=zeros(1,length(x));
-% beam_offp=zeros(1,length(x));
-% C10_onp=zeros(1,length(x));
-% C10_offp=zeros(1,length(x));
-% C11_onp=zeros(1,length(x));
-% C11_offp=zeros(1,length(x));
-% N13_onp=zeros(1,length(x));
-% N13_offp=zeros(1,length(x));
-% O15_onp=zeros(1,length(x));
-% O15_offp=zeros(1,length(x));
-% 
-% for i=1:tt
-%     beam=beam+int_C10p(i,:)+int_C11p(i,:)+int_N13p(i,:)+int_O15p(i,:);
-%     if i<a
-%         beam_onp=beam_onp+int_C10p(i,:)+int_C11p(i,:)+int_N13p(i,:)+int_O15p(i,:);
-%         C10_onp=C10_onp+int_C10p(i,:);
-%         C11_onp=C11_onp+int_C11p(i,:);
-%         N13_onp=N13_onp+int_N13p(i,:);
-%         O15_onp=O15_onp+int_O15p(i,:);
-%     else
-%         beam_offp=beam_offp+int_C10p(i,:)+int_C11p(i,:)+int_N13p(i,:)+int_O15p(i,:);
-%         C10_offp=C10_offp+int_C10p(i,:);
-%         C11_offp=C11_offp+int_C11p(i,:);
-%         N13_offp=N13_offp+int_N13p(i,:);
-%         O15_offp=O15_offp+int_O15p(i,:);
-%     end
-% end
-% 
-% figure;
-% 
-% %subplot(2,2,1);
-%     yyaxis right
-%     grid on
-%     plot(x,100*Ddepp,'k--');
-%     ylabel('-dE/dx')
-%     axis([0 17 0 max(100*Ddepp)+0.3*max(100*Ddepp)]);
-%     yyaxis left
-% hold on;
-% plot(x,beam_onp(1,:),'b');
-% plot(x,beam_offp(1,:),'r');
-%     title('Actividad total ');
-%     xlabel('z (cm)')
-%     ylabel('Beta+ emitters  ');
-%     legend('Beam On','Beam Off','Location', 'northeast');
-%     set(gca, 'FontSize', 16) 
-%     grid on;
-% [f,g]=min(Ddepp);
-% axis([ 0 (ceil(g*dx)) 0 (max(beam_offp)+0.2*max(beam_offp))]);
-% 
-% figure;
-% %subplot(2,2,2);
-%     yyaxis right
-%     grid on
-%     plot(x,100*Ddepp,'k--');
-%     ylabel('-dE/dx')
-%     axis([0 17 0 max(100*Ddepp)+0.3*max(100*Ddepp)]);
-%     yyaxis left
-% hold on;
-% plot(x,C11_onp(1,:),'b');
-% plot(x,C11_offp(1,:),'r');
-%     title('C11 ');
-%     xlabel('z (cm)')
-%     ylabel('Beta+ emitters ');
-%     legend('Beam On','Beam Off','Location', 'northeast');
-%     set(gca, 'FontSize', 16) 
-%     grid on;
-% [f,g]=min(Ddepp);
-% axis([ 0 (ceil(g*dx)) 0 (max(C11_offp)+0.2*max(C11_offp))]);
-% 
-% figure;
-% %subplot(2,2,3);
-%     yyaxis right
-%     grid on
-%     plot(x,100*Ddepp,'k--');
-%     ylabel('-dE/dx')
-%     axis([0 17 0 max(100*Ddepp)+0.3*max(100*Ddepp)]);
-%     yyaxis left
-% hold on;
-% plot(x,O15_onp(1,:),'b');
-% plot(x,O15_offp(1,:),'r');
-%     title('O15 ');
-%     xlabel('z (cm)')
-%     ylabel('Beta+ emitters  ');
-%     legend('Beam On','Beam Off','Location', 'northeast');
-%     set(gca, 'FontSize', 16) 
-%     grid on;
-% [f,g]=min(Ddepp);
-% axis([ 0 (ceil(g*dx)) 0 (max(O15_offp)+0.2*max(O15_offp))]);
-% 
-% figure;
-% %subplot(2,2,4);
-%     yyaxis right
-%     grid on
-%     plot(x,100*Ddepp,'k--');
-%     ylabel('-dE/dx')
-%     axis([0 17 0 max(100*Ddepp)+0.3*max(100*Ddepp)]);
-%     yyaxis left
-% hold on;
-% plot(x,N13_onp(1,:),'b');
-% plot(x,N13_offp(1,:),'r');
-%     title('N13 ');
-%     xlabel('z (cm)')
-%     ylabel('Beta+ emitters  ');
-%     legend('Beam On','Beam Off','Location', 'northeast');
-%     set(gca, 'FontSize', 16) 
-%     grid on;
-% [f,g]=min(Ddepp);
-% axis([ 0 (ceil(g*dx)) 0 (max(N13_offp)+0.2*max(N13_offp))]);
-% 
-% figure
-%     yyaxis right
-%     grid on
-%     plot(x,100*Ddepp,'k--');
-%     ylabel('-dE/dx')
-%     axis([0 5 0 max(100*Ddepp)+0.3*max(100*Ddepp)]);
-%     yyaxis left
-% hold on;
-% plot(x,beam(1,:),'b');
-%     title('Total ');
-%     xlabel('z (cm)')
-%     ylabel('Beta+ emitters  ');
-%     legend('Beam On','Dose','Location', 'northeast');
-%     set(gca, 'FontSize', 16) 
-%     grid on;
-% [f,g]=min(Ddepp);
-% axis([ 0 (ceil(g*dx)) 0 (max(beam(1,:))+0.2*max(beam(1,:)))]);
-% 
-% 
-% 
-% 
-% 
+ %% Actividad total en función de tiempo
+close all
+

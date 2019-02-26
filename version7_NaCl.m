@@ -15,7 +15,7 @@ dx=0.002;      %Paso del intervalo (cm)
 xref=1.0;       %Distancia que va a simular, poner un número acorde a la energia inicial.
 E0=9;        %Energía inicial del haz
 
-pps=5e10; %protones/segundo
+pps=5e10/8; %protones/segundo
 MeVJ=1.6e-13;
 landa_F18 =  log(2) / 6586;
 O18_fraction=0.00;
@@ -287,6 +287,11 @@ for i=1:t+1
 
             
             end
+            if (sum(temp_Mg23(i,:))<0.1*sum(temp_Mg23(d,:)) && f<1)
+                f=i
+                sum(temp_Mg23(i,:))
+                0.1*sum(temp_Mg23(d,:))
+            end
             c=c+1;
     end
            
@@ -315,7 +320,7 @@ end
     set(gca, 'FontSize', 16); 
     T=(0:t);
     hold on;
-    plot(T*deltat,(temp_parcMg23)/1000,'r');
+    plot(T*deltat,0.005*(temp_parcMg23)/1000,'r');
     grid on
     title('Actividad total en a lo largo del tiempo');
     xlabel('Tiempo (s)');

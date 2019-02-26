@@ -194,7 +194,7 @@ nC=1/1.6e-10;
 %la actividad del número de protones en el intervalo de tiempo que estamos simulando.
 for i=1:numel(calcTimes)
     % Water
-    act_Ca39(i,:) = deltat * landa_Ca39 .* Y_39Ca .* exp(- landa_Ca39 * calcTimes(i));
+    act_Ca39(i,:) =  landa_Ca39 .* Y_39Ca .* exp(- landa_Ca39 * calcTimes(i));
     
 
    
@@ -249,7 +249,7 @@ legend('39Ca')
 %pulsos de un sincrotrón). Los parámetros de tiempo de irradiación y de
 %decaimiento se introducen al principio
 
-deltat=0.001;      %Inervalo de tiempo de las simulaciones
+deltat=0.01;      %Inervalo de tiempo de las simulaciones
 a=10/deltat;  %Tiempo de irradación del haz (s)
 t=30/deltat;  %Tiempo total de la simulación
 
@@ -288,6 +288,11 @@ for i=1:(t+1)
 
             
             end
+            if (sum(temp_Ca39(i,:))<0.1*sum(temp_Ca39(d,:)) && f<1)
+                f=i
+                sum(temp_Ca39(i,:))
+                0.1*sum(temp_Ca39(d,:))
+            end
             c=c+1;
     end
            
@@ -316,7 +321,7 @@ end
     set(gca, 'FontSize', 16); 
     T=(0:t);
     hold on;
-    plot(T*deltat,(temp_parcCa39)/1000,'r');
+    plot(T*deltat,0.005*(temp_parcCa39)/1000,'r');
     grid on
     title('Actividad total en a lo largo del tiempo');
     xlabel('Tiempo (s)');

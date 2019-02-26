@@ -240,7 +240,7 @@ O16_N13_CS=O16_N13_CS./1000;
 figure
 hold off
 plot(O16_N13_E,O16_N13_CS,'bo'); hold on
-O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.999)
+O16_N13_F = fit(O16_N13_E,O16_N13_CS,'smoothingspline','SmoothingParam',0.2)
 O16_N13_F.p.coefs(1,:) = [0 0 0 0];
 O16_N13_F.p.coefs(end,:) = [0 0 0 0];
 plot(Eval,O16_N13_F(Eval),'r-')
@@ -451,6 +451,43 @@ xlabel('Proton energy (MeV)')
 ylabel('Cross section (barn)')
 title('Na23Mg23 cross sections')
 
+%% Fit Cs133-Ba133
+
+
+Cs133_Ba133_CS=fliplr(Cs133_Ba133_CS);
+Cs133_Ba133_E=fliplr(Cs133_Ba133_E);
+figure
+hold off
+plot(Cs133_Ba133_E,Cs133_Ba133_CS,'bo'); hold on
+Cs133_Ba133_F = fit(Cs133_Ba133_E,Cs133_Ba133_CS,'smoothingspline','SmoothingParam',0.5)
+Cs133_Ba133_F.p.coefs(1,:) = [0 0 0 0];
+Cs133_Ba133_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,Cs133_Ba133_F(Eval),'r-')
+axis([0 50 0 1]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Na23Mg23 cross sections')
+
+
+
+%% Fit Cs133-Ba133
+
+
+Cs133_Ba133m_CS=fliplr(Cs133_Ba133m_CS);
+Cs133_Ba133m_E=fliplr(Cs133_Ba133m_E);
+figure
+hold off
+plot(Cs133_Ba133m_E,Cs133_Ba133m_CS,'bo'); hold on
+Cs133_Ba133m_F = fit(Cs133_Ba133m_E,Cs133_Ba133m_CS,'smoothingspline','SmoothingParam',0.5)
+Cs133_Ba133m_F.p.coefs(1,:) = [0 0 0 0];
+Cs133_Ba133m_F.p.coefs(end,:) = [0 0 0 0];
+plot(Eval,Cs133_Ba133m_F(Eval),'r-')
+axis([0 50 0 1]);
+xlabel('Proton energy (MeV)')
+ylabel('Cross section (barn)')
+title('Na23Mg23 cross sections')
+
+
 %% Plot all (water)
 figure
 hold off
@@ -490,6 +527,7 @@ title('All cross sections for tissue + Zn')
 set(gca, 'XScale', 'log')
 set(gca, 'YScale', 'log')
 axis([1 300 1e-4 1]);
+
 
 %% Create fit for stopping power
 figure
